@@ -1,7 +1,8 @@
 const fs = require('fs');
 const User = require('./model')
 const users = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
-
+const Pets = require('./pets_model');
+const mongoose = require('mongoose')
 const getUsers = async function(){
     try {
         return await User.find({});
@@ -68,9 +69,57 @@ const updateUserById = async function(id, body){
     // } else throw new Error ('no such user');
 }
 
-// const updateJsonFile = function() {
-// //     fs.writeFileSync('./users.json', JSON.stringify(users, null, ' '));
-// // }
+const getUserPetsById = async function(id) {
+    try {
+
+        return await Pets.find({id}).populate('owner');
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+const getAllUsersWithPets = async function() {
+    try {
+        return await User.aggregate([
+            {
+                $lookup:
+                    {
+                        from: 'pets',
+                        localField: '_id',
+                        foreignField: 'owner',
+                        as: 'pets'
+                    }
+            },
+            {$match: {pets: {$ne: []}}}
+
+        ])
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+const getUserPets = async function(id) {
+    try {
+
+        console.log(id)
+        return await User.aggregate([
+            {
+                $lookup:
+                    {
+                        from: 'pets',
+                        localField: '_id',
+                        foreignField: 'owner',
+                        as: 'pets'
+                    }
+            },
+            { $match: { "_id": mongoose.Types.ObjectId(id) } }
+
+        ])
+    } catch (e) {
+        console.log(e)
+    }
+}
+
 
 
 module.exports = {
@@ -78,6 +127,9 @@ module.exports = {
     addUser,
     getUserById,
     deleteUserById,
-    updateUserById
+    updateUserById,
+    getUserPetsById,
+    getAllUsersWithPets,
+    getUserPets
 
 }

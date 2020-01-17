@@ -50,6 +50,32 @@ class UserController {
         }
     }
 
+    // getUserPets = async (req, res) => {
+    //     try {
+    //         const result = await service.getUserPetsById(req.body.id);
+    //         res.send(result);
+    //     } catch (e) {
+    //         res.status(400).send({error:e.message});
+    //     }
+    // }
+
+    getAllUsersWithPets = async (req, res) => {
+        try {
+            const result = await service.getAllUsersWithPets();
+            res.send(result);
+        } catch (e) {
+            res.status(400).send({error:e.message});
+        }
+    }
+
+    getUserPets = async (req, res) => {
+        try {
+            const result = await service.getUserPets(req.params.id);
+            res.send(result);
+        } catch (e) {
+            res.status(400).send({error:e.message});
+        }
+    }
 }
 
 module.exports = UserController;
