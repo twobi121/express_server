@@ -50,14 +50,14 @@ class UserController {
         }
     }
 
-    // getUserPets = async (req, res) => {
-    //     try {
-    //         const result = await service.getUserPetsById(req.body.id);
-    //         res.send(result);
-    //     } catch (e) {
-    //         res.status(400).send({error:e.message});
-    //     }
-    // }
+    getUserPetsById = async (req, res) => {
+        try {
+            const result = await service.getUserPetsById(req.body.id);
+            res.send(result);
+        } catch (e) {
+            res.status(400).send({error:e.message});
+        }
+    }
 
     getAllUsersWithPets = async (req, res) => {
         try {

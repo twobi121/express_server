@@ -50,8 +50,6 @@ class PetsController {
         }
     }
 
-
-
 }
 
 module.exports = PetsController;

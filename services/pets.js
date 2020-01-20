@@ -6,7 +6,7 @@ const getPets = async function(){
     try {
         return await Pets.find({});
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 }
 
@@ -19,7 +19,7 @@ const addPets = async function(req) {
         await pets.save()
         return `Pet ${Pets.name} was succesfully added `;
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 }
 
@@ -32,7 +32,7 @@ const getPetsById = async function(id) {
     try {
         return await Pets.findById(id);
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 
 }
@@ -45,7 +45,7 @@ const deletePetsById = async function(id){
         await Pets.deleteOne({_id: id});
         return `Pet with id ${id} was removed`
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 
 }
@@ -55,7 +55,7 @@ const updatePetsById = async function(id, body){
         await Pets.findByIdAndUpdate(id, body)
         return `Pet with id ${id} was updated`
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 
 

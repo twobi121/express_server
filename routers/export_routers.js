@@ -1,5 +1,5 @@
-const userRouter = require('../routers/user');
-const petsRouter = require('../routers/pets');
+const userRouter = require('./user');
+const petsRouter = require('./pets');
 
 module.exports = {
     userRouter,

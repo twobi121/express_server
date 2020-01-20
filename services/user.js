@@ -8,7 +8,7 @@ const getUsers = async function(){
     try {
         return await User.find({});
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 }
 
@@ -21,7 +21,7 @@ const addUser = async function(req) {
         await user.save();
         return `User ${user.name} was succesfully added `;
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 }
 
@@ -34,7 +34,7 @@ const getUserById = async function(id) {
     try {
         return await User.findById(id);
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 
 }
@@ -47,7 +47,7 @@ const deleteUserById = async function(id){
         await User.deleteOne({_id: id});
         return `User with id ${id} was removed`;
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 
 }
@@ -57,7 +57,7 @@ const updateUserById = async function(id, body){
         await User.findByIdAndUpdate(id, body);
         return `User with id ${id} was updated`;
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 
 
@@ -72,10 +72,9 @@ const updateUserById = async function(id, body){
 
 const getUserPetsById = async function(id) {
     try {
-
         return await Pets.find({id}).populate('owner');
     } catch (e) {
-        console.log(e)
+        throw new Error(e.message);
     }
 }
 
@@ -95,14 +94,12 @@ const getAllUsersWithPets = async function() {
 
         ])
     } catch (e) {
-        console.log(e);
+        throw new Error(e.message);
     }
 }
 
 const getUserPets = async function(id) {
     try {
-
-        console.log(id);
         return await User.aggregate([
             {
                 $lookup:
@@ -117,11 +114,9 @@ const getUserPets = async function(id) {
 
         ])
     } catch (e) {
-        console.log(e);
+        throw new Error(e.message);
     }
 }
-
-
 
 module.exports = {
     getUsers,
