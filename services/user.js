@@ -1,8 +1,9 @@
 const fs = require('fs');
-const User = require('./model')
+const User = require('../models/user');
 const users = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
-const Pets = require('./pets_model');
-const mongoose = require('mongoose')
+const Pets = require('../models/pets');
+const mongoose = require('mongoose');
+
 const getUsers = async function(){
     try {
         return await User.find({});
@@ -16,8 +17,8 @@ const addUser = async function(req) {
     // updateJsonFile();
 
     try {
-        const user = new User({name: req.name, surname: req.surname})
-        await user.save()
+        const user = new User({name: req.name, surname: req.surname});
+        await user.save();
         return `User ${user.name} was succesfully added `;
     } catch (e) {
         console.log(e)
@@ -44,7 +45,7 @@ const deleteUserById = async function(id){
     // updateJsonFile();
     try {
         await User.deleteOne({_id: id});
-        return `User with id ${id} was removed`
+        return `User with id ${id} was removed`;
     } catch (e) {
         console.log(e)
     }
@@ -53,8 +54,8 @@ const deleteUserById = async function(id){
 
 const updateUserById = async function(id, body){
     try {
-        await User.findByIdAndUpdate(id, body)
-        return `User with id ${id} was updated`
+        await User.findByIdAndUpdate(id, body);
+        return `User with id ${id} was updated`;
     } catch (e) {
         console.log(e)
     }
@@ -94,14 +95,14 @@ const getAllUsersWithPets = async function() {
 
         ])
     } catch (e) {
-        console.log(e)
+        console.log(e);
     }
 }
 
 const getUserPets = async function(id) {
     try {
 
-        console.log(id)
+        console.log(id);
         return await User.aggregate([
             {
                 $lookup:
@@ -116,7 +117,7 @@ const getUserPets = async function(id) {
 
         ])
     } catch (e) {
-        console.log(e)
+        console.log(e);
     }
 }
 

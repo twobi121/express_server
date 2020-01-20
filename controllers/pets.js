@@ -1,4 +1,4 @@
-const service = require('./pets_serv');
+const service = require('../services/pets');
 
 class PetsController {
 

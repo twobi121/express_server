@@ -1,6 +1,6 @@
 const express = require('express');
 
-const UserController = require('./user_contr');
+const UserController = require('../controllers/user');
 
 const user_controller = new UserController();
 

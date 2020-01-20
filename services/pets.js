@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Pets = require('./pets_model')
+const Pets = require('../models/pets')
 const pets = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
 
 const getPets = async function(){

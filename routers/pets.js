@@ -1,6 +1,6 @@
 const express = require('express');
 
-const PetsController = require('./pets_contr');
+const PetsController = require('../controllers/pets');
 
 const pets_controller = new PetsController();
 
