@@ -12,12 +12,12 @@ const getUsers = async function(){
     }
 }
 
-const addUser = async function(req) {
+const addUser = async function(login, name, surname, password) {
     // users.push(req);
     // updateJsonFile();
 
     try {
-        const user = new User({name: req.name, surname: req.surname});
+        const user = new User({login, name, surname, password});
         await user.save();
         return `User ${user.name} was succesfully added `;
     } catch (e) {
@@ -118,6 +118,20 @@ const getUserPets = async function(id) {
     }
 }
 
+const login = async function(login, password){
+    const user = await User.findByCredentials(login, password);
+    const token = await user.generateAuthToken();
+    return {user, token};
+}
+
+const logout = async function(req){
+    console.log(req.user)
+    req.user.tokens = req.user.tokens.filter((token) => {
+        return token.token !== req.token
+    })
+    await req.user.save()
+}
+
 module.exports = {
     getUsers,
     addUser,
@@ -126,6 +140,8 @@ module.exports = {
     updateUserById,
     getUserPetsById,
     getAllUsersWithPets,
-    getUserPets
+    getUserPets,
+    login,
+    logout
 
 }

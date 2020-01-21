@@ -16,7 +16,7 @@ class UserController {
 
     addUser = async (req, res) => {
         try {
-            const result = await service.addUser(req.body);
+            const result = await service.addUser(req.body.login, req.body.name, req.body.surname, req.body.password);
             res.status(201).send(result);
         } catch (e) {
             res.status(400).send({error:e.message});
@@ -81,6 +81,16 @@ class UserController {
         try {
             const result = await service.login(req.body.login, req.body.password)
             res.status(201).send(result)
+        } catch (e) {
+            res.status(400).send({error:e.message})
+        }
+    }
+
+    logout = async (req, res) => {
+        try {
+            console.log(req.user)
+            await service.logout(req)
+            res.send({responce: "successfully logout"})
         } catch (e) {
             res.status(400).send({error:e.message})
         }
