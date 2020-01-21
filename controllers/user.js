@@ -88,7 +88,6 @@ class UserController {
 
     logout = async (req, res) => {
         try {
-            console.log(req.user)
             await service.logout(req)
             res.send({responce: "successfully logout"})
         } catch (e) {

@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 
 const getUsers = async function(){
     try {
-        return await User.find({});
+        return await User.find({}).select('-tokens');
     } catch (e) {
         throw new Error(e.message);
     }
@@ -125,7 +125,6 @@ const login = async function(login, password){
 }
 
 const logout = async function(req){
-    console.log(req.user)
     req.user.tokens = req.user.tokens.filter((token) => {
         return token.token !== req.token
     })
