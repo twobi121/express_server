@@ -1,5 +1,7 @@
 const express = require('express');
 const auth = require('../middleware/auth');
+const valid = require('../middleware/validation');
+const validSchema = require('../utils/validation_schemas');
 
 const UserController = require('../controllers/user');
 
@@ -14,7 +16,7 @@ router.get('/', user_controller.getUsers);
 router.post('/login', user_controller.login);
 router.post('/logout', auth, user_controller.logout);
 // router.post('/logout', user_controller.logout);
-router.post('/add', user_controller.addUser);
+router.post('/add', valid(validSchema.userSchema), user_controller.addUser);
 router.get('/:id', user_controller.getUserById);
 router.delete('/:id', user_controller.deleteUserById);
 router.put('/:id', user_controller.updateUserById);
