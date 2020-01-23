@@ -19,7 +19,7 @@ router.post('/logout', auth, user_controller.logout);
 router.post('/add', valid(validSchema.userSchema), user_controller.addUser);
 router.get('/:id', user_controller.getUserById);
 router.delete('/:id', user_controller.deleteUserById);
-router.put('/:id', user_controller.updateUserById);
+router.put('/:id', valid(validSchema.userSchema), user_controller.updateUserById);
 
 
 

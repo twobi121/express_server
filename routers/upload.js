@@ -1,6 +1,5 @@
 const express = require('express');
 
-
 const UploadController = require('../controllers/upload');
 
 const upload_controller = new UploadController();

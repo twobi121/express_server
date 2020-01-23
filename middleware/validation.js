@@ -1,6 +1,6 @@
 const Joi = require('@hapi/joi');
 
-module.exports = function jopa (schema) {
+module.exports = function (schema) {
     return async function (req, res, next) {
         try {
             const value = await schema.validateAsync(req.body);
@@ -8,9 +8,8 @@ module.exports = function jopa (schema) {
             next()
         }
         catch (err) {
-            console.log(err)
+            res.status(400).send({error: err.message});
         }
 
     }
-
 }

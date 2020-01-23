@@ -19,7 +19,7 @@ const addUser = async function(login, name, surname, password) {
     try {
         const user = new User({login, name, surname, password});
         await user.save();
-        return `User ${user.name} was succesfully added `;
+        return `User ${user.login} was succesfully added `;
     } catch (e) {
         throw new Error(e.message);
     }

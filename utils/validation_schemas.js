@@ -1,5 +1,6 @@
 const Joi = require('@hapi/joi');
 
+
 const userSchema = Joi.object({
     login: Joi.string()
         .alphanum()
@@ -12,10 +13,8 @@ const userSchema = Joi.object({
 
     repeat_password: Joi.ref('password'),
 
-    access_token: [
-        Joi.string(),
-        Joi.number()
-    ],
+    phone: Joi.string()
+        .pattern(new RegExp(`^((375(29|33|25|44))|(\\+375\\s\\((29|33|25|44)\\)\\s)|(8\\s\\(0(29|33|25|44)\\)\\s))[1-9]{1}([0-9]{6}|[0-9]{2}-[0-9]{2}-[0-9]{2})$`)),
 
     birth_year: Joi.number()
         .integer()
