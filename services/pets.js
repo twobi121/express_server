@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Pets = require('../models/pets')
+const Pets = require('../models/pets');
 const pets = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
 
 const getPets = async function(){
@@ -16,7 +16,7 @@ const addPets = async function(req) {
 
     try {
         const pets = new Pets({name: req.name, owner: req.owner})
-        await pets.save()
+        await pets.save();
         return `Pet ${Pets.name} was succesfully added `;
     } catch (e) {
         throw new Error(e.message);
@@ -43,7 +43,7 @@ const deletePetsById = async function(id){
     // updateJsonFile();
     try {
         await Pets.deleteOne({_id: id});
-        return `Pet with id ${id} was removed`
+        return `Pet with id ${id} was removed`;
     } catch (e) {
         throw new Error(e.message);
     }
@@ -52,8 +52,8 @@ const deletePetsById = async function(id){
 
 const updatePetsById = async function(id, body){
     try {
-        await Pets.findByIdAndUpdate(id, body)
-        return `Pet with id ${id} was updated`
+        await Pets.findByIdAndUpdate(id, body);
+        return `Pet with id ${id} was updated`;
     } catch (e) {
         throw new Error(e.message);
     }

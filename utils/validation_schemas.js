@@ -1,6 +1,5 @@
 const Joi = require('@hapi/joi');
 
-
 const userSchema = Joi.object({
     login: Joi.string()
         .alphanum()

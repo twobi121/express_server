@@ -2,7 +2,7 @@ const express = require('express');
 const router = require('./routers/export_routers');
 const mongoose = require('mongoose');
 const multer  = require("multer");
-const storageConfig = require("./utils/upload_config")
+const storageConfig = require("./utils/upload_config");
 const app = express();
 const port = 8000;
 

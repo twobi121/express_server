@@ -1,6 +1,3 @@
-const service = require('../services/upload');
-
-
 class UploadController {
 
     constructor() {

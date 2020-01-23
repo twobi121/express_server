@@ -127,7 +127,7 @@ const login = async function(login, password){
 const logout = async function(req){
     req.user.tokens = req.user.tokens.filter((token) => {
         return token.token !== req.token
-    })
+    });
     await req.user.save()
 }
 
