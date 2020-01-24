@@ -1,6 +1,6 @@
 const fs = require('fs');
 const User = require('../models/user');
-const users = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
+// const users = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
 const Pets = require('../models/pets');
 const mongoose = require('mongoose');
 
@@ -101,6 +101,7 @@ const getAllUsersWithPets = async function() {
 const getUserPets = async function(id) {
     try {
         return await User.aggregate([
+            { $match: { "_id": mongoose.Types.ObjectId(id) } },
             {
                 $lookup:
                     {
@@ -109,9 +110,7 @@ const getUserPets = async function(id) {
                         foreignField: 'owner',
                         as: 'pets'
                     }
-            },
-            { $match: { "_id": mongoose.Types.ObjectId(id) } }
-
+            }
         ])
     } catch (e) {
         throw new Error(e.message);
@@ -119,16 +118,24 @@ const getUserPets = async function(id) {
 }
 
 const login = async function(login, password){
-    const user = await User.findByCredentials(login, password);
-    const token = await user.generateAuthToken();
-    return {user, token};
+    try {
+        const user = await User.findByCredentials(login, password);
+        const token = await user.generateAuthToken();
+        return {user, token};
+    } catch (e) {
+        throw new Error(e.message);
+    }
 }
 
 const logout = async function(req){
-    req.user.tokens = req.user.tokens.filter((token) => {
-        return token.token !== req.token
-    });
-    await req.user.save()
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {
+            return token.token !== req.token
+        });
+        await req.user.save();
+    } catch (e) {
+        throw new Error(e.message);
+    }
 }
 
 module.exports = {
@@ -142,5 +149,4 @@ module.exports = {
     getUserPets,
     login,
     logout
-
 }
