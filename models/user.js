@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const userSchema = new mongoose.Schema({
     login: {
@@ -17,8 +18,7 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
-        minlength: 7,
+        minlength: 2,
         trim: true,
         validate(value) {
             if (value.toLowerCase().includes('password')) {
@@ -26,10 +26,19 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
+    email: {
+        type: String,
+    },
+    birth_year: {
+        type: Number,
+    },
+    phone: {
+        type: String,
+    },
     tokens: [{
         token: {
             type: String,
-            required: true
+
         }
     }],
 
@@ -38,12 +47,12 @@ const userSchema = new mongoose.Schema({
 userSchema.statics.findByCredentials = async (login, password) => {
     const user = await User.findOne({login});
     if(!user) {
-        throw new Error('Unable user');
+        throw new Error('Неверный логин или пароль');
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-        throw new Error('Unable to login');
+        throw new Error('Неверный логин или пароль');
     }
 
     return user;
@@ -51,7 +60,7 @@ userSchema.statics.findByCredentials = async (login, password) => {
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
-    const token = jwt.sign({_id: user._id.toString() }, 'lolerkeker');
+    const token = jwt.sign({_id: user._id.toString() }, process.env.SECRET_KEY);
     user.tokens = user.tokens.concat({ token });
     user.save();
 

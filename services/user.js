@@ -6,18 +6,19 @@ const mongoose = require('mongoose');
 
 const getUsers = async function(){
     try {
-        return await User.find({}).select('-tokens');
+        return await User.find({}).select('-tokens -password -__v');
     } catch (e) {
         throw new Error(e.message);
     }
 }
 
-const addUser = async function(login, name, surname, password) {
+const addUser = async function(data) {
     // users.push(req);
     // updateJsonFile();
 
     try {
-        const user = new User({login, name, surname, password});
+        const user = new User({...data});
+        console.log(user)
         await user.save();
         return `User ${user.login} was succesfully added `;
     } catch (e) {
@@ -32,7 +33,7 @@ const getUserById = async function(id) {
     // } else
 
     try {
-        return await User.findById(id);
+        return await User.findById(id).select('-tokens -password -__v');
     } catch (e) {
         throw new Error(e.message);
     }

@@ -14,11 +14,11 @@ class UserController {
         }
     }
 
-    addUser = async (req, res) => {
+    addUser     = async (req, res) => {
         try {
             console.log(req.valid)
-            const result = await service.addUser(req.valid.login, req.valid.name, req.valid.surname, req.valid.password);
-            res.status(201).send(result);
+            const result = await service.addUser(req.valid);
+            res.status(201).send(JSON.stringify(result));
         } catch (e) {
             res.status(400).send({error:e.message});
         }
