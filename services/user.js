@@ -18,7 +18,6 @@ const addUser = async function(data) {
 
     try {
         const user = new User({...data});
-        console.log(user)
         await user.save();
         return `User ${user.login} was succesfully added `;
     } catch (e) {
@@ -37,7 +36,14 @@ const getUserById = async function(id) {
     } catch (e) {
         throw new Error(e.message);
     }
+}
 
+const getUserByLogin = async function(login) {
+    try {
+        return await User.find({login: login}).select('-_id -tokens -password -__v');
+    } catch (e) {
+        throw new Error(e.message);
+    }
 }
 
 const deleteUserById = async function(id){
@@ -128,7 +134,7 @@ const login = async function(login, password){
     }
 }
 
-const logout = async function(req){
+const logout = async function(req) {
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token !== req.token
@@ -139,15 +145,26 @@ const logout = async function(req){
     }
 }
 
+const getLogo = async function() {
+    try {
+        const logo = await User.find({logo: {}});
+        return logo;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
 module.exports = {
     getUsers,
     addUser,
     getUserById,
+    getUserByLogin,
     deleteUserById,
     updateUserById,
     getUserPetsById,
     getAllUsersWithPets,
     getUserPets,
     login,
-    logout
+    logout,
+    getLogo
 }

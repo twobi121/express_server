@@ -24,10 +24,29 @@ class UserController {
         }
     }
 
+    getUserLogin = (req, res) => {
+        try {
+            const result = req.user.login;
+            res.send(JSON.stringify(result));
+        } catch (e) {
+            res.status(400).send({error:e.message});
+        }
+    }
+
     getUserById = async (req, res) => {
         try {
             const result = await service.getUserById(req.params.id);
             res.send(result);
+        } catch (e) {
+            res.status(400).send({error:e.message});
+        }
+    }
+
+    getUserByLogin = async (req, res) => {
+        try {
+            const result = await service.getUserByLogin(req.params.login);
+            const user = result[0];
+            res.send(user);
         } catch (e) {
             res.status(400).send({error:e.message});
         }
@@ -93,6 +112,15 @@ class UserController {
             res.send({responce: "successfully logout"})
         } catch (e) {
             res.status(400).send({error:e.message})
+        }
+    }
+
+    getLogo = async (req, res) => {
+        try {
+            const logo = await service.getLogo();
+            res.send(logo);
+        } catch (e) {
+            res.status(400).send({error: e.message})
         }
     }
 }
