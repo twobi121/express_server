@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
     },
+    avatar: {
+        type: Object,
+        default: {filename: 'avatar-default.png'}
+    },
     tokens: [{
         token: {
             type: String,
@@ -45,7 +49,7 @@ const userSchema = new mongoose.Schema({
 })
 
 userSchema.statics.findByCredentials = async (login, password) => {
-    const user = await User.findOne({login});
+    const user = await User.findOne({login: login.toLowerCase()});
     if(!user) {
         throw new Error('Неверный логин или пароль');
     }
@@ -79,3 +83,4 @@ userSchema.pre('save', async function(next){
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
+

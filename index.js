@@ -2,8 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const router = require('./routers/export_routers');
 const mongoose = require('mongoose');
-const multer  = require("multer");
-const storageConfig = require("./utils/upload_config");
 const cors = require('cors');
 
 
@@ -22,7 +20,6 @@ app.use(cors());
 
 app.use(express.json());
 app.use(express.static('public'));
-app.use(multer({storage:storageConfig}).single("file"));
 
 app.use('/users', router.userRouter);
 app.use('/pets', router.petsRouter);

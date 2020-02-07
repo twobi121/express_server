@@ -13,7 +13,9 @@ router.get('/pets', user_controller.getAllUsersWithPets);
 router.get('/:id/pets', user_controller.getUserPets);//возвращает овнера с петами внутри
 router.get('/:id/petss', user_controller.getUserPetsById);//возвращает петов с объектом овнера внутри
 router.get('/user', auth, user_controller.getUserLogin);
+router.get('/lastphotos', auth, user_controller.lastphotos);
 router.get('/:login', user_controller.getUserByLogin);
+
 router.get('/', user_controller.getUsers);
 router.post('/login', user_controller.login);
 router.post('/logout', auth, user_controller.logout);

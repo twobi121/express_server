@@ -5,18 +5,21 @@ const userSchema = Joi.object({
         .alphanum()
         .min(3)
         .max(30)
+        .lowercase()
         .required(),
 
     name: Joi.string()
         .alphanum()
         .min(3)
         .max(30)
+        .lowercase()
         .required(),
 
     surname: Joi.string()
         .alphanum()
         .min(3)
         .max(30)
+        .lowercase()
         .required(),
 
     password: Joi.string()
@@ -33,6 +36,7 @@ const userSchema = Joi.object({
         .max(2013),
 
     email: Joi.string()
+        .lowercase()
         .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
 })
 const petsSchema = Joi.object({

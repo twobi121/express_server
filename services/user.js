@@ -2,6 +2,7 @@ const fs = require('fs');
 const User = require('../models/user');
 // const users = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
 const Pets = require('../models/pets');
+const Photos = require('../models/photos');
 const mongoose = require('mongoose');
 
 const getUsers = async function(){
@@ -154,6 +155,15 @@ const getLogo = async function() {
     }
 }
 
+const lastphotos = async function(id) {
+    try {
+        const lastphotos = await Photos.find({owner_id: id});
+        return lastphotos;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
 module.exports = {
     getUsers,
     addUser,
@@ -166,5 +176,6 @@ module.exports = {
     getUserPets,
     login,
     logout,
-    getLogo
+    getLogo,
+    lastphotos
 }
