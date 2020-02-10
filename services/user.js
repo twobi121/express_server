@@ -41,7 +41,7 @@ const getUserById = async function(id) {
 
 const getUserByLogin = async function(login) {
     try {
-        return await User.find({login: login}).select('-_id -tokens -password -__v');
+        return await User.find({login: login}).select('-tokens -password -__v');
     } catch (e) {
         throw new Error(e.message);
     }
@@ -155,14 +155,7 @@ const getLogo = async function() {
     }
 }
 
-const lastphotos = async function(id) {
-    try {
-        const lastphotos = await Photos.find({owner_id: id});
-        return lastphotos;
-    } catch (e) {
-        throw new Error(e.message);
-    }
-}
+
 
 module.exports = {
     getUsers,
@@ -176,6 +169,5 @@ module.exports = {
     getUserPets,
     login,
     logout,
-    getLogo,
-    lastphotos
+    getLogo
 }

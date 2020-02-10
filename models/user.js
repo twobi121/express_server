@@ -76,6 +76,9 @@ userSchema.pre('save', async function(next){
     if(user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8);
     }
+
+    this.name.charAt(0).toUpperCase() + this.name.slice(1);
+    this.surname.charAt(0).toUpperCase() + this.name.slice(1);
     next();
 })
 

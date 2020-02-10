@@ -64,9 +64,7 @@ const petsSchema = Joi.object({
     email: Joi.string()
         .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
 })
-// .with('username', 'birth_year')
-// .xor('password', 'access_token')
-// .with('password', 'repeat_password');
+
 
 module.exports = {
     userSchema,

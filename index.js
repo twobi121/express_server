@@ -23,7 +23,7 @@ app.use(express.static('public'));
 
 app.use('/users', router.userRouter);
 app.use('/pets', router.petsRouter);
-app.use('/upload', router.uploadRouter);
+app.use('/media', router.mediaRouter);
 
 async function start() {
     try {

@@ -1,9 +1,9 @@
 const userRouter = require('./user');
 const petsRouter = require('./pets');
-const uploadRouter = require('./upload');
+const mediaRouter = require('./media');
 
 module.exports = {
     userRouter,
     petsRouter,
-    uploadRouter
+    mediaRouter
 }

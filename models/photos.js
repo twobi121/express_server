@@ -5,12 +5,16 @@ const photosSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    album_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Albums',
+      required: true
+    },
     owner_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
     }
-
 })
 
 const Photos = mongoose.model('Photos', photosSchema);

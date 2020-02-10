@@ -123,15 +123,6 @@ class UserController {
             res.status(400).send({error: e.message})
         }
     }
-
-    lastphotos = async (req, res) => {
-        try {
-            const photos = await service.lastphotos(req.user._id);
-            res.send(photos);
-        } catch (e) {
-            res.status(400).send({error: e.message})
-        }
-    }
 }
 
 module.exports = UserController;
