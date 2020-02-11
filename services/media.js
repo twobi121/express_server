@@ -15,17 +15,15 @@ const createAlbum = async function(data) {
 
 const lastphotos = async function(id) {
     try {
-        let lastphotos;
-        let _id;
-        const album = new Promise (Albums.find({$and: [ {owner_id: id}, {main: true}]}))
-            .then(async data => {
-                _id = data._id;
-                lastphotos = await Photos.find({_id})
-                console.log(lastphotos)
-            } )
-            .then(() => console.log(lastphotos));
-        console.log(album)
-        return album
+        const album = await Albums.find({$and: [ {owner_id: id}, {main: true}]});
+
+        if (album.length) {
+            const lastphotos = await Photos.find({album_id: album[0]._id});
+            return {id: album[0]._id, lastphotos: lastphotos}
+        }
+
+        return;
+
 
 
 
@@ -50,14 +48,36 @@ const lastphotos = async function(id) {
 
 const upload = async function(file, album_id, owner_id) {
     const filename = file.filename;
+    if(!album_id) {
+        const album = await Albums.find({$and: [ {owner_id}, {main: true}]});
+        album_id = album[0]._id
+    }
     const photo = new Photos({filename, album_id, owner_id} );
     photo.save();
+}
+
+const getAlbum = async function(id) {
+    return Albums.aggregate([
+        {
+            $match: {'_id' : mongoose.Types.ObjectId(id)}
+        },
+        {
+            $lookup:
+                {
+                    from: 'photos',
+                    localField: '_id',
+                    foreignField: 'album_id',
+                    as: 'photos'
+                }
+        }
+    ])
 }
 
 module.exports = {
     createAlbum,
     lastphotos,
-    upload
+    upload,
+    getAlbum
 }
 
 

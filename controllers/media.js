@@ -17,7 +17,6 @@ class MediaController {
         }
     }
 
-
     // getAlbums = (req, res) => {
     //     const filedata = req.file;
     //     if (filedata) {
@@ -41,7 +40,7 @@ class MediaController {
 
     lastphotos = async (req, res) => {
         try {
-            const photos = await mediaService.lastphotos(req.user._id);
+            const photos = await mediaService.lastphotos(req.params.id);
             res.send(photos);
         } catch (e) {
             res.status(400).send({error: e.message})
@@ -50,11 +49,20 @@ class MediaController {
 
     upload = async (req, res) => {
         if (req.file) {
-            await mediaService.upload(req.file, req.headers.album_id, req.headers.owner_id);
+            await mediaService.upload(req.file, req.headers.album_id, req.user.id);
             res.status(200).send(JSON.stringify("Файл загружен"));
         }
         else {
             res.status(400).send(JSON.stringify("Ошибка при загрузке файла"));
+        }
+    }
+
+    getAlbum = async (req, res) => {
+        try {
+            const album = await mediaService.getAlbum(req.params.id);
+            res.send(album);
+        } catch (e) {
+            res.status(400).send({error: e.message})
         }
     }
 }
