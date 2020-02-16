@@ -20,9 +20,13 @@ const albumsSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+    },
+    preview: {
+        type: String,
+        default: 'avatar-default.png'
     }
 
-})
+});
 
 const Albums = mongoose.model('Albums', albumsSchema);
 module.exports = Albums;

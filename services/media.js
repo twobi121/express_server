@@ -18,7 +18,7 @@ const lastphotos = async function(id) {
         const album = await Albums.find({$and: [ {owner_id: id}, {main: true}]});
 
         if (album.length) {
-            const lastphotos = await Photos.find({album_id: album[0]._id});
+            const lastphotos = await Photos.find({album_id: album[0]._id}).limit(3);
             return {id: album[0]._id, lastphotos: lastphotos}
         }
 
@@ -56,28 +56,42 @@ const upload = async function(file, album_id, owner_id) {
     photo.save();
 }
 
-const getAlbum = async function(id) {
-    return Albums.aggregate([
+const getAlbums = async function(id) {
+    const albums = await Albums.aggregate([
         {
-            $match: {'_id' : mongoose.Types.ObjectId(id)}
-        },
-        {
-            $lookup:
-                {
-                    from: 'photos',
-                    localField: '_id',
-                    foreignField: 'album_id',
-                    as: 'photos'
-                }
+            $match: {'owner_id' : mongoose.Types.ObjectId(id)}
         }
-    ])
+    ]);
+
+    const photos = await Photos.aggregate([
+        {
+            $match: {'owner_id' : mongoose.Types.ObjectId(id)}
+        },
+        { $lookup:
+        {
+            from: 'albums',
+            localField: 'album_id',
+            foreignField: '_id',
+            as: 'albums'
+        }},
+        {$group: {
+                _id: {$year: "$date"},
+                filenames: { $push: "$$ROOT"}
+
+            }},
+        {$sort: {_id: -1}}
+    ]);
+
+    return {albums, photos};
 }
+
+
 
 module.exports = {
     createAlbum,
     lastphotos,
     upload,
-    getAlbum
+    getAlbums
 }
 
 

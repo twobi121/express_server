@@ -43,7 +43,7 @@ class MediaController {
             const photos = await mediaService.lastphotos(req.params.id);
             res.send(photos);
         } catch (e) {
-            res.status(400).send({error: e.message})
+            res.status(400).send({error: e.mess})
         }
     }
 
@@ -57,14 +57,28 @@ class MediaController {
         }
     }
 
+    getAlbums = async (req, res) => {
+        try {
+
+            const albums = await mediaService.getAlbums(req.params.id);
+            console.log(albums)
+            res.send(albums);
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
     getAlbum = async (req, res) => {
         try {
             const album = await mediaService.getAlbum(req.params.id);
+
             res.send(album);
         } catch (e) {
             res.status(400).send({error: e.message})
         }
     }
+
+
 }
 
 module.exports = MediaController;
