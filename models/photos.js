@@ -18,6 +18,11 @@ const photosSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now()
+    },
+    likes: {
+        type: Number,
+        default: 0
+
     }
 })
 

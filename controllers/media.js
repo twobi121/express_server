@@ -59,9 +59,7 @@ class MediaController {
 
     getAlbums = async (req, res) => {
         try {
-
             const albums = await mediaService.getAlbums(req.params.id);
-            console.log(albums)
             res.send(albums);
         } catch (e) {
             res.status(400).send({error: e.message})
@@ -71,7 +69,7 @@ class MediaController {
     getAlbum = async (req, res) => {
         try {
             const album = await mediaService.getAlbum(req.params.id);
-
+            console.log(album)
             res.send(album);
         } catch (e) {
             res.status(400).send({error: e.message})

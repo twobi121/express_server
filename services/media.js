@@ -77,12 +77,30 @@ const getAlbums = async function(id) {
         {$group: {
                 _id: {$year: "$date"},
                 filenames: { $push: "$$ROOT"}
-
             }},
-        {$sort: {_id: -1}}
+        {$sort: {_id: -1}},
+
     ]);
 
     return {albums, photos};
+}
+
+const getAlbum = async function(id) {
+    const album = await Albums.aggregate([
+        {
+            $match: { "_id": mongoose.Types.ObjectId(id)}
+        },
+        {
+            $lookup:
+                {
+                    from: 'photos',
+                    localField: '_id',
+                    foreignField: 'album_id',
+                    as: 'photos'
+                }
+        }
+    ]);
+    return album;
 }
 
 
@@ -91,7 +109,8 @@ module.exports = {
     createAlbum,
     lastphotos,
     upload,
-    getAlbums
+    getAlbums,
+    getAlbum
 }
 
 
