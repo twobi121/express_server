@@ -13,6 +13,7 @@ router.post('/create', auth, media_controller.createAlbum);
 router.post('/', auth, storage, media_controller.upload);
 router.get('/album/:id', auth, media_controller.getAlbum);
 router.get('/albums/:id', auth, media_controller.getAlbums);
+router.get('/albums_photos/:id', auth, media_controller.getAlbumsWithPhotos);
 router.get('/lastphotos/:id', auth, media_controller.lastphotos);
 
 

@@ -59,6 +59,16 @@ const upload = async function(file, album_id, owner_id) {
 const getAlbums = async function(id) {
     const albums = await Albums.aggregate([
         {
+            $match: {'owner_id': mongoose.Types.ObjectId(id)}
+        }
+    ]);
+
+    return albums;
+}
+
+const getAlbumsWithPhotos = async function(id) {
+    const albums = await Albums.aggregate([
+        {
             $match: {'owner_id' : mongoose.Types.ObjectId(id)}
         }
     ]);
@@ -90,18 +100,20 @@ const getAlbum = async function(id) {
         {
             $match: { "_id": mongoose.Types.ObjectId(id)}
         },
-        {
-            $lookup:
                 {
-                    from: 'photos',
-                    localField: '_id',
-                    foreignField: 'album_id',
-                    as: 'photos'
+                    $lookup:
+                        {
+                            from: 'photos',
+                            localField: '_id',
+                            foreignField: 'album_id',
+                            as: 'photos'
+                        }
                 }
-        }
-    ]);
+            ])
     return album;
 }
+
+
 
 
 
@@ -110,6 +122,7 @@ module.exports = {
     lastphotos,
     upload,
     getAlbums,
+    getAlbumsWithPhotos,
     getAlbum
 }
 
