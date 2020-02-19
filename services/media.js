@@ -7,7 +7,23 @@ const createAlbum = async function(data) {
     try {
         const album = new Albums({...data});
         await album.save();
-        return `Альбом успешно добавлен`;
+        return album._id;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const deleteAlbum = async function(id) {
+    try {
+        await Albums.deleteOne({_id: id});
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const deletePhoto = async function(id) {
+    try {
+        await Photos.deleteOne({_id: id});
     } catch (e) {
         throw new Error(e.message);
     }
@@ -48,10 +64,17 @@ const lastphotos = async function(id) {
 
 const upload = async function(file, album_id, owner_id) {
     const filename = file.filename;
+    let album;
+
     if(!album_id) {
-        const album = await Albums.find({$and: [ {owner_id}, {main: true}]});
+        album = await Albums.find({$and: [ {owner_id}, {main: true}]});
         album_id = album[0]._id
+    } else album = await Albums.find({_id: album_id});
+
+    if(!album[0].preview || album[0].preview === 'avatar-default.png') {
+       await Albums.findByIdAndUpdate(album_id, {preview : file.filename});
     }
+
     const photo = new Photos({filename, album_id, owner_id} );
     photo.save();
 }
@@ -119,6 +142,8 @@ const getAlbum = async function(id) {
 
 module.exports = {
     createAlbum,
+    deleteAlbum,
+    deletePhoto,
     lastphotos,
     upload,
     getAlbums,

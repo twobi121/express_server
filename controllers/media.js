@@ -28,14 +28,33 @@ class MediaController {
     //     }
     // }
 
-    createAlbum = (req, res) => {
+    createAlbum = async (req, res) => {
         try {
-            mediaService.createAlbum(req.body);
-            res.status(200).send(JSON.stringify("Альбом успешно создан"));
+            req.body.owner_id = req.user._id;
+            const albumId = await mediaService.createAlbum(req.body);
+            res.status(200).send(albumId);
         } catch (e) {
             res.status(400).send({error: e.message})
         }
 
+    }
+
+    deleteAlbum = async (req, res) => {
+        try {
+            await mediaService.deleteAlbum(req.params.id);
+            res.status(200).send(JSON.stringify('Альбом успешно удален'));
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    deletePhoto = async (req, res) => {
+        try {
+            await mediaService.deletePhoto(req.params.id);
+            res.status(200).send(JSON.stringify('Фото успешно удалено'));
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
     }
 
     lastphotos = async (req, res) => {
@@ -49,7 +68,7 @@ class MediaController {
 
     upload = async (req, res) => {
         if (req.file) {
-            await mediaService.upload(req.file, req.headers.album_id, req.user.id);
+            await mediaService.upload(req.file, req.params.albumId, req.user.id);
             res.status(200).send(JSON.stringify("Файл загружен"));
         }
         else {
