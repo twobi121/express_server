@@ -2,7 +2,8 @@ const fs = require('fs');
 const User = require('../models/user');
 // const users = JSON.parse(fs.readFileSync('./users.json', 'utf8' ));
 const Pets = require('../models/pets');
-const Photos = require('../models/photos');
+const Request = require('../models/requests');
+const Friend = require('../models/friend');
 const mongoose = require('mongoose');
 
 const getUsers = async function(){
@@ -27,11 +28,6 @@ const addUser = async function(data) {
 }
 
 const getUserById = async function(id) {
-    // const user = users.find(item => item.id == id);
-    // if (!user) {
-    //     throw new Error ('no such user');
-    // } else
-
     try {
         return await User.findById(id).select('-tokens -password -__v');
     } catch (e) {
@@ -155,6 +151,87 @@ const getLogo = async function() {
     }
 }
 
+const createRequest = async function(data) {
+    try {
+        const request = new Request({...data});
+        await request.save();
+        return `Request was successfully send`;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const getRequests = async function(id) {
+    try {
+        const requests = await Request.aggregate([
+            {
+                $match: { "owner_id": mongoose.Types.ObjectId(id)}
+            },
+            {
+                $lookup:
+                    {
+                        from: 'users',
+                        localField: 'sender_id',
+                        foreignField: '_id',
+                        as: 'user'
+                    }
+            },
+            {
+                $unset: [ "owner_id", "sender_id", "__v" ]
+            }
+        ]);
+        return requests;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const acceptRequest = async function(id) {
+    try {
+        const requests = await Request.findById(id);
+        const request = new Friend({friend1_id: requests.owner_id, friend2_id: requests.sender_id});
+        await request.save();
+        await Request.deleteOne({_id: id});
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const getFriends = async function(login) {
+    try {
+        const user = await User.find({login});
+
+        const friends = await Friend.aggregate([
+            {
+                $match: { $or: [{ friend1_id: mongoose.Types.ObjectId(user[0]._id) }, { friend2_id: mongoose.Types.ObjectId(user[0]._id) }] }
+            }, {
+                $project: {
+                    friend_id: {
+                        $cond: {
+                            if: { $eq: [ user[0]._id, "$friend1_id" ] },
+                            then: "$friend2_id",
+                            else: "$friend1_id"
+                        }
+                    }
+                }
+            }, {
+                $lookup: {
+                    from: 'users',
+                    localField: 'friend_id',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            }, {
+                $unset: ['_id', 'friend_id']
+            }, {
+                $unwind: '$user'
+            }
+        ]);
+       return friends;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
 
 
 module.exports = {
@@ -169,5 +246,9 @@ module.exports = {
     getUserPets,
     login,
     logout,
-    getLogo
+    getLogo,
+    getRequests,
+    createRequest,
+    acceptRequest,
+    getFriends
 }

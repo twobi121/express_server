@@ -60,7 +60,7 @@ class MediaController {
     lastphotos = async (req, res) => {
         try {
             const photos = await mediaService.lastphotos(req.params.id);
-            res.send(photos);
+            res.status(200).send(photos);
         } catch (e) {
             res.status(400).send({error: e.mess})
         }
@@ -79,7 +79,7 @@ class MediaController {
     getAlbumsWithPhotos = async (req, res) => {
         try {
             const albums = await mediaService.getAlbumsWithPhotos(req.params.id);
-            res.send(albums);
+            res.status(200).send(albums);
         } catch (e) {
             res.status(400).send({error: e.message})
         }
@@ -88,7 +88,7 @@ class MediaController {
     getAlbum = async (req, res) => {
         try {
             const album = await mediaService.getAlbum(req.params.id);
-            res.send(album);
+            res.status(200).send(album);
         } catch (e) {
             res.status(400).send({error: e.message})
         }
@@ -97,7 +97,16 @@ class MediaController {
     getAlbums = async (req, res) => {
         try {
             const albums = await mediaService.getAlbums(req.params.id);
-            res.send(albums);
+            res.status(200).send(albums);
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    updateAlbumPreview = async (req, res) => {
+        try {
+            await mediaService.updateAlbumPreview(req.body);
+            res.status(200).send(JSON.stringify("Обложка обновлена"));
         } catch (e) {
             res.status(400).send({error: e.message})
         }

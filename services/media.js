@@ -63,80 +63,103 @@ const lastphotos = async function(id) {
 }
 
 const upload = async function(file, album_id, owner_id) {
-    const filename = file.filename;
-    let album;
+    try {
+        const filename = file.filename;
+        let album;
 
-    if(!album_id) {
-        album = await Albums.find({$and: [ {owner_id}, {main: true}]});
-        album_id = album[0]._id
-    } else album = await Albums.find({_id: album_id});
+        if(!album_id) {
+            album = await Albums.find({$and: [ {owner_id}, {main: true}]});
+            album_id = album[0]._id
+        } else album = await Albums.find({_id: album_id});
 
-    if(!album[0].preview || album[0].preview === 'avatar-default.png') {
-       await Albums.findByIdAndUpdate(album_id, {preview : file.filename});
+        if(!album[0].preview || album[0].preview === 'avatar-default.png') {
+           await Albums.findByIdAndUpdate(album_id, {preview : file.filename});
+        }
+
+        const photo = new Photos({filename, album_id, owner_id} );
+        photo.save();
+    } catch (e) {
+        throw new Error(e.message);
     }
-
-    const photo = new Photos({filename, album_id, owner_id} );
-    photo.save();
 }
 
 const getAlbums = async function(id) {
-    const albums = await Albums.aggregate([
-        {
-            $match: {'owner_id': mongoose.Types.ObjectId(id)}
-        }
-    ]);
+    try {
+        const albums = await Albums.aggregate([
+            {
+                $match: {'owner_id': mongoose.Types.ObjectId(id)}
+            }
+        ]);
 
-    return albums;
+        return albums;
+    } catch (e) {
+        throw new Error(e.message);
+    }
 }
 
 const getAlbumsWithPhotos = async function(id) {
-    const albums = await Albums.aggregate([
-        {
-            $match: {'owner_id' : mongoose.Types.ObjectId(id)}
-        }
-    ]);
+    try {
+        const albums = await Albums.aggregate([
+            {
+                $match: {'owner_id' : mongoose.Types.ObjectId(id)}
+            }
+        ]);
 
-    const photos = await Photos.aggregate([
-        {
-            $match: {'owner_id' : mongoose.Types.ObjectId(id)}
-        },
-        { $lookup:
-        {
-            from: 'albums',
-            localField: 'album_id',
-            foreignField: '_id',
-            as: 'albums'
-        }},
-        {$group: {
-                _id: {$year: "$date"},
-                filenames: { $push: "$$ROOT"}
+        const photos = await Photos.aggregate([
+            {
+                $match: {'owner_id' : mongoose.Types.ObjectId(id)}
+            },
+            { $lookup:
+            {
+                from: 'albums',
+                localField: 'album_id',
+                foreignField: '_id',
+                as: 'albums'
             }},
-        {$sort: {_id: -1}},
+            {$sort: {date: -1}},
+            {$group: {
+                    _id: {$year: "$date"},
+                    filenames: { $push: "$$ROOT"}
+                }},
+            {$sort: {_id: -1}},
 
-    ]);
+        ]);
 
-    return {albums, photos};
+        return {albums, photos};
+    } catch (e) {
+        throw new Error(e.message);
+    }
 }
 
 const getAlbum = async function(id) {
-    const album = await Albums.aggregate([
-        {
-            $match: { "_id": mongoose.Types.ObjectId(id)}
-        },
-                {
-                    $lookup:
-                        {
-                            from: 'photos',
-                            localField: '_id',
-                            foreignField: 'album_id',
-                            as: 'photos'
-                        }
-                }
-            ])
-    return album;
+    try {
+        const album = await Albums.aggregate([
+            {
+                $match: { "_id": mongoose.Types.ObjectId(id)}
+            },
+                    {
+                        $lookup:
+                            {
+                                from: 'photos',
+                                localField: '_id',
+                                foreignField: 'album_id',
+                                as: 'photos'
+                            }
+                    }
+                ])
+        return album;
+    } catch (e) {
+        throw new Error(e.message);
+    }
 }
 
-
+const updateAlbumPreview = async function(ids) {
+    try {
+        await Albums.findByIdAndUpdate(ids.albumId, {preview: ids.filename});
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
 
 
 
@@ -148,7 +171,8 @@ module.exports = {
     upload,
     getAlbums,
     getAlbumsWithPhotos,
-    getAlbum
+    getAlbum,
+    updateAlbumPreview
 }
 
 

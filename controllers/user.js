@@ -123,6 +123,46 @@ class UserController {
             res.status(400).send({error: e.message})
         }
     }
+
+    createRequest = async (req, res) => {
+        try {
+            const data = {owner_id: req.body.id, sender_id: req.user._id};
+            await service.createRequest(data);
+            res.send({responce: "successfully send"});
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    getRequests = async (req, res) => {
+        try {
+            const requests = await service.getRequests(req.user._id);
+            res.send(requests);
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    acceptRequest = async (req, res) => {
+        try {
+            await service.acceptRequest(req.body.id);
+            res.send({responce: "successfully accepted"});
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    getFriends = async (req, res) => {
+        try {
+            const friends = await service.getFriends(req.params.login);
+            res.send(friends);
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+
+
 }
 
 module.exports = UserController;
