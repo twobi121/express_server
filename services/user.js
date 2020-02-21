@@ -35,9 +35,88 @@ const getUserById = async function(id) {
     }
 }
 
-const getUserByLogin = async function(login) {
+const getUserByLogin = async function(login, _id) {
     try {
-        return await User.find({login: login}).select('-tokens -password -__v');
+        return await User.aggregate([
+            {
+                $match: {login}
+            }, {
+                $lookup: {
+                    from: "friends",
+                    let: {
+                        user_id: "$_id",
+                        id: _id
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $or: [
+                                        {
+                                            $and: [
+                                                {
+                                                    $eq: [
+                                                        "$$user_id",
+                                                        "$friend1_id"
+                                                    ]
+                                                },
+                                                {
+                                                    $eq: [
+                                                        "$$id",
+                                                        "$friend2_id"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            $and: [
+                                                {
+                                                    $eq: [
+                                                        "$$id",
+                                                        "$friend1_id"
+                                                    ]
+                                                },
+                                                {
+                                                    $eq: [
+                                                        "$$user_id",
+                                                        "$friend2_id"
+                                                    ]
+                                                }
+                                            ]
+                                        }]
+                                }
+                            }
+                        }
+                    ],
+                    as: "friend"
+                }
+            },
+            {
+                $lookup: {
+                    from: "requests",
+                    localField: '_id',
+                    foreignField: 'owner_id',
+                    as: "request"
+                }
+            },
+             {
+                $addFields: {  friend:
+                        { $cond: [{ $size: "$friend" }, true, false]}
+                    }
+            },  {
+                $addFields: {  request:
+                        { $cond: [{ $size: "$request" }, true, false]}
+                }
+            }, {
+                $unset: [ "password", "tokens", "__v" ]
+            }
+        ])
+
+
+
+
+
+        // find({login: login}).select('-tokens -password -__v');
     } catch (e) {
         throw new Error(e.message);
     }
@@ -197,6 +276,14 @@ const acceptRequest = async function(id) {
     }
 }
 
+const declineRequest = async function(id) {
+    try {
+        await Request.deleteOne({_id: id});
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
 const getFriends = async function(login) {
     try {
         const user = await User.find({login});
@@ -220,14 +307,33 @@ const getFriends = async function(login) {
                     localField: 'friend_id',
                     foreignField: '_id',
                     as: 'user'
+                },
+            },
+            {
+                $project:  {
+                    "_id": 1,
+                    "user._id": 1,
+                    "user.avatar": 1,
+                    "user.name": 1,
+                    "user.surname": 1,
+                    "user.login": 1,
                 }
-            }, {
-                $unset: ['_id', 'friend_id']
+            },{
+                $unset: ['friend_id']
             }, {
                 $unwind: '$user'
             }
         ]);
        return friends;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const unfriend = async function(id) {
+    try {
+        await Friend.deleteOne({_id: id});
+        return `Дружбы больше нет`;
     } catch (e) {
         throw new Error(e.message);
     }
@@ -250,5 +356,7 @@ module.exports = {
     getRequests,
     createRequest,
     acceptRequest,
-    getFriends
+    declineRequest,
+    getFriends,
+    unfriend
 }

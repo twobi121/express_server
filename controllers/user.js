@@ -44,7 +44,8 @@ class UserController {
 
     getUserByLogin = async (req, res) => {
         try {
-            const result = await service.getUserByLogin(req.params.login);
+            const result = await service.getUserByLogin(req.params.login, req.user._id);
+            console.log(result)
             const user = result[0];
             res.send(user);
         } catch (e) {
@@ -152,10 +153,28 @@ class UserController {
         }
     }
 
+    declineRequest = async (req, res) => {
+        try {
+            await service.declineRequest(req.body.id);
+            res.send({responce: "successfully declined"});
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
     getFriends = async (req, res) => {
         try {
             const friends = await service.getFriends(req.params.login);
             res.send(friends);
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    unfriend = async (req, res) => {
+        try {
+            await service.unfriend(req.body.id);
+            res.send(JSON.stringify("Друг удален"));
         } catch (e) {
             res.status(400).send({error: e.message})
         }

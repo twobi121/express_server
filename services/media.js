@@ -16,6 +16,7 @@ const createAlbum = async function(data) {
 const deleteAlbum = async function(id) {
     try {
         await Albums.deleteOne({_id: id});
+        await Photos.deleteMany({album_id: id});
     } catch (e) {
         throw new Error(e.message);
     }
@@ -161,6 +162,14 @@ const updateAlbumPreview = async function(ids) {
     }
 }
 
+const updateAlbum = async function(body) {
+    try {
+        await Albums.findByIdAndUpdate(body.id, {...body});
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
 
 
 module.exports = {
@@ -172,7 +181,8 @@ module.exports = {
     getAlbums,
     getAlbumsWithPhotos,
     getAlbum,
-    updateAlbumPreview
+    updateAlbumPreview,
+    updateAlbum
 }
 
 

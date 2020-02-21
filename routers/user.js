@@ -21,6 +21,8 @@ router.post('/logout', auth, user_controller.logout);
 router.post('/add', valid(validSchema.userSchema), user_controller.addUser);
 router.post('/request', auth, user_controller.createRequest);
 router.post('/accept', auth, user_controller.acceptRequest);
+router.post('/decline', auth, user_controller.declineRequest);
+router.post('/unfriend', auth, user_controller.unfriend);
 router.get('/logo', user_controller.getLogo);
 router.delete('/:id', user_controller.deleteUserById);
 router.put('/:id', valid(validSchema.userSchema), user_controller.updateUserById);

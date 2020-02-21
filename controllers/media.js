@@ -112,6 +112,15 @@ class MediaController {
         }
     }
 
+    updateAlbum = async (req, res) => {
+        try {
+            await mediaService.updateAlbum(req.body);
+            res.status(200).send(JSON.stringify("Альбом обновлен"));
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
 }
 
 module.exports = MediaController;
