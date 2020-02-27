@@ -35,7 +35,15 @@ const getUserById = async function(id) {
     }
 }
 
-const getUserByLogin = async function(login, _id) {
+const getUserByLogin = async function(login) {
+    try {
+        return User.find({login: login}).select('-tokens -password -__v');
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const getIsFriend = async function(login, _id) {
     try {
         return await User.aggregate([
             {
@@ -99,18 +107,15 @@ const getUserByLogin = async function(login, _id) {
                     as: "request"
                 }
             },
-             {
-                $addFields: {  friend:
-                        { $cond: [{ $size: "$friend" }, true, false]}
-                    }
-            },  {
-                $addFields: {  request:
-                        { $cond: [{ $size: "$request" }, true, false]}
+            {
+                $project: {
+                    friend:
+                        {$cond: [{$size: "$friend"}, true, false]},
+                    request:
+                        {$cond: [{$size: "$request"}, true, false]}
                 }
-            }, {
-                $unset: [ "password", "tokens", "__v" ]
-            }
-        ])
+            }]
+        )
 
 
 
@@ -345,6 +350,7 @@ module.exports = {
     addUser,
     getUserById,
     getUserByLogin,
+    getIsFriend,
     deleteUserById,
     updateUserById,
     getUserPetsById,

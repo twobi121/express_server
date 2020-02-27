@@ -14,7 +14,7 @@ class UserController {
         }
     }
 
-    addUser     = async (req, res) => {
+    addUser = async (req, res) => {
         try {
             console.log(req.valid)
             const result = await service.addUser(req.valid);
@@ -42,10 +42,30 @@ class UserController {
         }
     }
 
+    getLoggedUser =  async (req, res) => {
+        try {
+            if (req.user) {
+
+                res.send(req.user);
+            }
+        } catch (e) {
+            res.status(400).send({error:e.message});
+        }
+    }
+
     getUserByLogin = async (req, res) => {
         try {
-            const result = await service.getUserByLogin(req.params.login, req.user._id);
-            console.log(result)
+            const result = await service.getUserByLogin(req.params.login);
+            const user = result[0];
+            res.send(user);
+        } catch (e) {
+            res.status(400).send({error:e.message});
+        }
+    }
+
+    getIsFriend = async (req, res) => {
+        try {
+            const result = await service.getIsFriend(req.params.login, req.user._id);
             const user = result[0];
             res.send(user);
         } catch (e) {

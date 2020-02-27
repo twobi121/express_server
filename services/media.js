@@ -40,24 +40,6 @@ const lastphotos = async function(id) {
         }
 
         return;
-
-
-
-
-        // return await Albums.aggregate([
-        //     {
-        //         $match: {$and: [ {"owner_id": id}, {"main": true}]}
-        //     },
-        //     {
-        //         $lookup:
-        //             {
-        //                 from: 'photos',
-        //                 localField: '_id',
-        //                 foreignField: 'album_id',
-        //                 as: 'photos'
-        //             }
-        //     }
-        // ])
     } catch (e) {
         throw new Error(e.message);
     }

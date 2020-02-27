@@ -6,15 +6,15 @@ class MediaController {
     constructor() {
     }
 
-    uploadAvatar = (req, res) => {
+    uploadAvatar = async (req, res) => {
         const filedata = req.file;
-        if (filedata) {
-            userService.updateUserById(req.user._id, {avatar: filedata})
-            res.status(200).send(JSON.stringify("Файл загружен"));
-        }
-        else {
+       try {
+           await userService.updateUserById(req.user._id, {avatar: filedata});
+           const user = await userService.getUserById(req.user._id);
+           res.status(200).send(user.avatar);
+       } catch (e) {
             res.status(400).send(JSON.stringify("Ошибка при загрузке файла"));
-        }
+       }
     }
 
     // getAlbums = (req, res) => {

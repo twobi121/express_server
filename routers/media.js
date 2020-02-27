@@ -14,7 +14,7 @@ router.post('/', auth, storage, media_controller.upload);
 router.get('/album/:id', auth, media_controller.getAlbum);
 router.get('/albums/:id', auth, media_controller.getAlbums);
 router.get('/albums_photos/:id', auth, media_controller.getAlbumsWithPhotos);
-router.get('/lastphotos/:id', auth, media_controller.lastphotos);
+router.get('/lastphotos/:id', media_controller.lastphotos);
 router.delete('/album/:id', auth, media_controller.deleteAlbum);
 router.delete('/photo/:id', auth, media_controller.deletePhoto);
 router.put('/preview', auth, media_controller.updateAlbumPreview);
