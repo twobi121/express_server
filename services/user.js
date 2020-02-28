@@ -114,6 +114,9 @@ const getIsFriend = async function(login, _id) {
                     request:
                         {$cond: [{$size: "$request"}, true, false]}
                 }
+            },
+            {
+                $unset: [ "_id" ]
             }]
         )
 
@@ -262,6 +265,9 @@ const getRequests = async function(id) {
             },
             {
                 $unset: [ "owner_id", "sender_id", "__v" ]
+            },
+            {
+                $unwind: '$user'
             }
         ]);
         return requests;
@@ -272,6 +278,7 @@ const getRequests = async function(id) {
 
 const acceptRequest = async function(id) {
     try {
+        console.log(111)
         const requests = await Request.findById(id);
         const request = new Friend({friend1_id: requests.owner_id, friend2_id: requests.sender_id});
         await request.save();

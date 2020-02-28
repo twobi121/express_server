@@ -35,8 +35,8 @@ const lastphotos = async function(id) {
         const album = await Albums.find({$and: [ {owner_id: id}, {main: true}]});
 
         if (album.length) {
-            const lastphotos = await Photos.find({album_id: album[0]._id}).limit(3);
-            return {id: album[0]._id, lastphotos: lastphotos}
+            const lastphotos = await Photos.find({album_id: album[0]._id}).limit(3).select('-__v');
+            return lastphotos;
         }
 
         return;
