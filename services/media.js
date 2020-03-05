@@ -88,7 +88,7 @@ const getAlbumsWithPhotos = async function(id) {
             }
         ]);
 
-        const photos = await Photos.aggregate([
+        const sortedPhotos = await Photos.aggregate([
             {
                 $match: {'owner_id' : mongoose.Types.ObjectId(id)}
             },
@@ -97,18 +97,19 @@ const getAlbumsWithPhotos = async function(id) {
                 from: 'albums',
                 localField: 'album_id',
                 foreignField: '_id',
-                as: 'albums'
+                as: 'album'
             }},
+            {$unwind: '$album'},
             {$sort: {date: -1}},
             {$group: {
                     _id: {$year: "$date"},
-                    filenames: { $push: "$$ROOT"}
+                    photos: { $push: "$$ROOT"}
                 }},
             {$sort: {_id: -1}},
 
         ]);
 
-        return {albums, photos};
+        return {albums, sortedPhotos};
     } catch (e) {
         throw new Error(e.message);
     }
@@ -130,7 +131,7 @@ const getAlbum = async function(id) {
                             }
                     }
                 ])
-        return album;
+        return album[0];
     } catch (e) {
         throw new Error(e.message);
     }

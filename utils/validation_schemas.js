@@ -9,14 +9,14 @@ const userSchema = Joi.object({
         .required(),
 
     name: Joi.string()
-        .alphanum()
+        .pattern(new RegExp('^[a-zA-ZА-Яа-я]{3,30}$'))
         .min(3)
         .max(30)
         .lowercase()
         .required(),
 
     surname: Joi.string()
-        .alphanum()
+        .pattern(new RegExp('^[a-zA-ZА-Яа-я]{3,30}$'))
         .min(3)
         .max(30)
         .lowercase()

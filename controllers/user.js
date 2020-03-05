@@ -16,7 +16,6 @@ class UserController {
 
     addUser = async (req, res) => {
         try {
-            console.log(req.valid)
             const result = await service.addUser(req.valid);
             res.status(201).send(JSON.stringify(result));
         } catch (e) {
@@ -195,6 +194,15 @@ class UserController {
         try {
             await service.unfriend(req.body.id);
             res.send(JSON.stringify("Друг удален"));
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    search = async (req, res) => {
+        try {
+            const users = await service.search(req.body.value);
+            res.send(users);
         } catch (e) {
             res.status(400).send({error: e.message})
         }

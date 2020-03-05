@@ -223,7 +223,7 @@ const logout = async function(req) {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token !== req.token
         });
-        await req.user.save();
+        await User.findByIdAndUpdate(req.user._id, {tokens: req.user.tokens});
     } catch (e) {
         throw new Error(e.message);
     }
@@ -351,6 +351,15 @@ const unfriend = async function(id) {
     }
 }
 
+const search = async function(value) {
+    try {
+        const users = await User.find( {name: new RegExp('^' + value, 'i')} )
+        return users;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
 
 module.exports = {
     getUsers,
@@ -371,5 +380,6 @@ module.exports = {
     acceptRequest,
     declineRequest,
     getFriends,
-    unfriend
+    unfriend,
+    search
 }

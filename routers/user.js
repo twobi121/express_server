@@ -19,6 +19,7 @@ router.get('/:login', user_controller.getUserByLogin);
 router.get('/:login/isFriend', auth, user_controller.getIsFriend);
 router.get('/', user_controller.getUsers);
 router.post('/login', user_controller.login);
+router.post('/search', user_controller.search);
 router.post('/logout', auth, user_controller.logout);
 router.post('/add', valid(validSchema.userSchema), user_controller.addUser);
 router.post('/request', auth, user_controller.createRequest);
