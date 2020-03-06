@@ -7,7 +7,7 @@ class UserController {
 
     getUsers = async (req, res) => {
         try {
-            const result = await service.getUsers();
+            const result = await service.getUsers(req.body);
             res.send(result);
         } catch (e) {
             res.status(400).send({error:e.message});
@@ -201,7 +201,7 @@ class UserController {
 
     search = async (req, res) => {
         try {
-            const users = await service.search(req.body.value);
+            const users = await service.search(req.body);
             res.send(users);
         } catch (e) {
             res.status(400).send({error: e.message})

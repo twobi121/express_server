@@ -6,18 +6,46 @@ const Request = require('../models/requests');
 const Friend = require('../models/friend');
 const mongoose = require('mongoose');
 
-const getUsers = async function(){
+const getUsers = async function(body) {
     try {
-        return await User.find({}).select('-tokens -password -__v');
+        let match;
+        if (!body.value) {
+            match = {};
+        } else if (body.value) {
+            match = {$or: [{'name': new RegExp('^' + body.value, 'i')}, {'surname': new RegExp('^' + body.value, 'i')}]}
+        }
+        return await User.aggregate([
+            { $facet: {
+                    users: [
+                        { $match: match},
+                        {$sort: {[body.sort]: 1}},
+                        {$limit: body.number},
+                        {$unset: [ "password", "tokens", "__v" ]}
+                    ],
+                    totalCount: [
+                        { "$count": "count" }
+                    ]
+                }},
+            {$unwind: '$users'},
+            {$unwind: '$totalCount'},
+            {$replaceRoot: { newRoot: {
+                        $mergeObjects: [ "$users", { totalCount: "$totalCount.count" } ] }}
+            }
+        ])
     } catch (e) {
         throw new Error(e.message);
     }
 }
 
-const addUser = async function(data) {
-    // users.push(req);
-    // updateJsonFile();
+// const search = async function(body) {
+//     try {
+//
+//     } catch (e) {
+//         throw new Error(e.message);
+//     }
+// }
 
+const addUser = async function(data) {
     try {
         const user = new User({...data});
         await user.save();
@@ -278,7 +306,6 @@ const getRequests = async function(id) {
 
 const acceptRequest = async function(id) {
     try {
-        console.log(111)
         const requests = await Request.findById(id);
         const request = new Friend({friend1_id: requests.owner_id, friend2_id: requests.sender_id});
         await request.save();
@@ -351,15 +378,6 @@ const unfriend = async function(id) {
     }
 }
 
-const search = async function(value) {
-    try {
-        const users = await User.find( {name: new RegExp('^' + value, 'i')} )
-        return users;
-    } catch (e) {
-        throw new Error(e.message);
-    }
-}
-
 
 module.exports = {
     getUsers,
@@ -380,6 +398,5 @@ module.exports = {
     acceptRequest,
     declineRequest,
     getFriends,
-    unfriend,
-    search
+    unfriend
 }
