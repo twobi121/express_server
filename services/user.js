@@ -9,16 +9,18 @@ const mongoose = require('mongoose');
 const getUsers = async function(body) {
     try {
         let match;
+        const skip = body.number * (body.page - 1);
         if (!body.value) {
             match = {};
         } else if (body.value) {
             match = {$or: [{'name': new RegExp('^' + body.value, 'i')}, {'surname': new RegExp('^' + body.value, 'i')}]}
         }
         return await User.aggregate([
+            { $match: match},
             { $facet: {
                     users: [
-                        { $match: match},
                         {$sort: {[body.sort]: 1}},
+                        {$skip: skip},
                         {$limit: body.number},
                         {$unset: [ "password", "tokens", "__v" ]}
                     ],
@@ -31,7 +33,7 @@ const getUsers = async function(body) {
             {$replaceRoot: { newRoot: {
                         $mergeObjects: [ "$users", { totalCount: "$totalCount.count" } ] }}
             }
-        ])
+        ]);
     } catch (e) {
         throw new Error(e.message);
     }
