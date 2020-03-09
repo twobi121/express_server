@@ -31,20 +31,21 @@ const getDialogues = async function(id) {
                     _id: '$_id',
                     users: { $push: '$users' }
                 }
-            },
-            // {
-            //     $lookup: {
-            //         from: 'message',
-            //         as: 'messages',
-            //         let: { _id: '$_id' },
-            //         pipeline: [
-            //             { $match: {
-            //                     $expr: { $eq: [ '$chat_id', '$$_id' ] }
-            //                 } },
-            //             { $limit: 1 }
-            //         ]
-            //     }
-            // }
+            }, {
+                $lookup: {
+                    from: 'messages',
+                    as: 'lastMessage',
+                    let: { ch_id: '$_id' },
+                    pipeline: [
+                        { $match: {
+                                $expr: { $eq: [ '$chat_id', '$$ch_id' ] }
+                            } },
+                        { $limit: 1 }
+                    ]
+                }
+            }, {
+                $unwind: '$lastMessage'
+            }
         ]);
     } catch (e) {
         throw new Error(e.message);
