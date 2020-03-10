@@ -20,12 +20,11 @@ class ChatController {
         }
     }
 
-    addMessage = async (req, res) => {
+    addMessage = async (message) => {
         try {
-            await chatService.addMessage(req.body.message, req.body.chat_id, req.body.owner_id);
-            return res.status(200).send(JSON.stringify('сообщение отправлено'));
+            return await chatService.addMessage(message.message, message.chat_id, message.owner_id);
         } catch (e) {
-            res.status(400).send({error: e.message});
+            // res.status(400).send({error: e.message});
         }
     }
 

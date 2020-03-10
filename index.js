@@ -29,7 +29,8 @@ app.use('/pets', router.petsRouter);
 app.use('/media', router.mediaRouter);
 app.use('/dialogues', router.chatRouter);
 
-
+const ChatController = require('./controllers/chat');
+const chatController = new ChatController();
 
 async function start() {
     try {
@@ -43,28 +44,17 @@ async function start() {
             console.log('server on port ' + port);
         })
 
-        const io = require('socket.io').listen(server)
+        const io = require('socket.io').listen(server);
 
-        io.of('/dialogues').on("connection", socket => {
-
-        });
-        // io.on("connection", socket => {
-        //     // Log whenever a user connects
-        //     console.log("user connected");
-        //
-        //     // Log whenever a client disconnects from our websocket server
-        //     socket.on("disconnect", function() {
-        //         console.log("user disconnected");
-        //     });
-        //
-        //     // When we receive a 'message' event from our client, print out
-        //     // the contents of that message and then echo it back to our client
-        //     // using `io.emit()`
-        //     socket.on("message", message => {
-        //         console.log("Message Received: " + message);
-        //         io.emit("message", { type: "new-message", text: message });
-        //     });
-        // });
+        io.on('connection', (socket) => {
+            socket.on('join', room => {
+                socket.join(room);
+            });
+            socket.on('message', async message => {
+                const newMessage = await chatController.addMessage(message);
+                io.emit("new-message", newMessage);
+            });
+        })
     }
     catch (e) {
         console.log(e);

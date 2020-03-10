@@ -16,9 +16,14 @@ const messageSchema = new mongoose.Schema({
         required: true
     },
     date: {
-        type: Date,
-        default: Date.now()
+        type: Date
     }
+})
+
+messageSchema.pre('save', async function(next){
+    const message = this;
+    message.date = Date.now();
+    next();
 })
 
 const Message = mongoose.model('Message', messageSchema);

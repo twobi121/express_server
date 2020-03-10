@@ -40,11 +40,14 @@ const getDialogues = async function(id) {
                         { $match: {
                                 $expr: { $eq: [ '$chat_id', '$$ch_id' ] }
                             } },
+                        { $sort: {date: -1}},
                         { $limit: 1 }
                     ]
                 }
             }, {
                 $unwind: '$lastMessage'
+            }, {
+                $sort: {'lastMessage.date' : -1}
             }
         ]);
     } catch (e) {
@@ -54,7 +57,9 @@ const getDialogues = async function(id) {
 
 const getMessages = async function(id) {
     try {
-        return Message.find({chat_id: id});
+        let count = await Message.find({chat_id: id}).count();
+        count = count > 5 ? count - 5 : 0;
+        return await Message.find({chat_id: id}).skip(count).populate('owner_id', 'avatar _id login name surname');
     } catch (e) {
         throw new Error(e.message);
     }
@@ -64,6 +69,7 @@ const addMessage = async function(message, chat_id, owner_id) {
     try {
         const msg = new Message({message, chat_id, owner_id});
         await msg.save();
+        return await Message.findById(msg._id).populate('owner_id', 'avatar _id login name surname');
     } catch (e) {
         throw new Error(e);
     }
