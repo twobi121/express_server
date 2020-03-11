@@ -46,13 +46,22 @@ async function start() {
 
         const io = require('socket.io').listen(server);
 
-        io.on('connection', (socket) => {
+            io.on('connection', (socket) => {
             socket.on('join', room => {
                 socket.join(room);
-            });
-            socket.on('message', async message => {
-                const newMessage = await chatController.addMessage(message);
-                io.emit("new-message", newMessage);
+                socket.on('message', async message => {
+                    const newMessage = await chatController.addMessage(message);
+                    message.receivers_id.forEach(id =>{
+                            console.log(id)
+                            io.in(room).to(id).emit("not", message.message)
+                    }
+
+                    );
+                    io.to(room).emit("new-message", newMessage);
+                });
+                socket.on('leaveRoom', () => {
+                        socket.leave(room);
+                    })
             });
         })
     }
