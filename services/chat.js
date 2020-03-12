@@ -32,6 +32,19 @@ const getDialogues = async function(id) {
                     users: { $push: '$users' }
                 }
             }, {
+                $project: {
+                    _id: '$_id',
+                    users: {
+                        $filter: {
+                                    input: "$users",
+                                    "as": "user",
+                                    cond: {
+                                        $ne: [ "$$user._id", id ]
+                                    }
+                                }
+                        }
+                }
+            }, {
                 $lookup: {
                     from: 'messages',
                     as: 'lastMessage',
@@ -41,12 +54,28 @@ const getDialogues = async function(id) {
                                 $expr: { $eq: [ '$chat_id', '$$ch_id' ] }
                             } },
                         { $sort: {date: -1}},
-                        { $limit: 1 }
+                        { $limit: 1 }, {
+                            $lookup: {
+                                from: 'users',
+                                as: 'owner',
+                                let: { owner_id: '$owner_id' },
+                                pipeline: [
+                                    { $match: {
+                                            $expr: { $eq: [ '$_id', '$$owner_id' ] }
+                                        }
+                                    }, {
+                                        $unset: ['tokens', 'password', 'phone', 'birth_year', 'email','__v']
+                                    }]
+                            }
+                        }
                     ]
                 }
             }, {
                 $unwind: '$lastMessage'
             }, {
+                $unwind: '$lastMessage.owner'
+            },
+            {
                 $sort: {'lastMessage.date' : -1}
             }
         ]);

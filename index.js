@@ -17,8 +17,6 @@ app.use(function(req, res, next) {
     next();
 });
 
-
-
 app.use(cors({credentials: true, origin: "http://localhost:4200"}));
 
 app.use(express.json());
@@ -46,29 +44,32 @@ async function start() {
 
         const io = require('socket.io').listen(server);
 
-            io.on('connection', (socket) => {
-            socket.on('join', room => {
-                socket.join(room);
-                socket.on('message', async message => {
-                    const newMessage = await chatController.addMessage(message);
-                    message.receivers_id.forEach(id =>{
-                            console.log(id)
-                            io.in(room).to(id).emit("not", message.message)
-                    }
+        io.engine.generateId = function (socket) {
+            return socket._query.id
+        };
 
-                    );
-                    io.to(room).emit("new-message", newMessage);
+        io.on('connection', (socket) => {
+            console.log('connect')
+            let _room;
+            socket.on('join', room => {
+                _room = room;
+                socket.join(room);
+            });
+            socket.on('leaveRoom', () => {
+                socket.leave(_room);
+            })
+            socket.on('message', async message => {
+                const newMessage = await chatController.addMessage(message);
+                io.to(_room).emit("new-message", newMessage);
+                message.receivers_id.forEach(id => {
+                    io.to(`${id}`).emit("not", message.message)
                 });
-                socket.on('leaveRoom', () => {
-                        socket.leave(room);
-                    })
             });
         })
     }
     catch (e) {
         console.log(e);
     }
-
 }
 
 start();
