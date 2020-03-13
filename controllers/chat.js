@@ -11,10 +11,10 @@ class ChatController {
         }
     }
 
-    getMessages = async (req, res) => {
+    getMessages = async (id, res) => {
         try {
-            const messages = await chatService.getMessages(req.params.id);
-            res.status(200).send(messages);
+            return await chatService.getMessages(id);
+            // res.status(200).send(messages);
         } catch (e) {
             res.status(400).send({error: e.message});
         }
@@ -22,7 +22,15 @@ class ChatController {
 
     addMessage = async (message) => {
         try {
-            return await chatService.addMessage(message.message, message.chat_id, message.owner_id);
+            return await chatService.addMessage(message.message, message.chat_id, message.owner_id, message.receivers_id);
+        } catch (e) {
+            // res.status(400).send({error: e.message});
+        }
+    }
+
+    updateMessage = async (chat_id, user_id) => {
+        try {
+            await chatService.updateMessage(chat_id, user_id);
         } catch (e) {
             // res.status(400).send({error: e.message});
         }

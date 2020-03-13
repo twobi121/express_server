@@ -88,25 +88,70 @@ const getMessages = async function(id) {
     try {
         let count = await Message.find({chat_id: id}).count();
         count = count > 5 ? count - 5 : 0;
-        return await Message.find({chat_id: id}).skip(count).populate('owner_id', 'avatar _id login name surname');
+        return await Message.aggregate([
+            {
+                $match: { 'chat_id': mongoose.Types.ObjectId(id)}
+            }, {
+                $skip: count
+            },
+            { $lookup: {
+                    from: 'users',
+                    as: 'owner',
+                    let: { owner_id: '$owner_id' },
+                    pipeline: [
+                        { $match: {
+                                $expr: { $eq: [ '$_id', '$$owner_id' ] }
+                            }
+                        }, {
+                            $unset: ['tokens', 'password', 'phone', 'birth_year', 'email','__v']
+                        }]
+                }
+            }, {
+                $unwind: '$owner'
+            }
+        ]);
     } catch (e) {
         throw new Error(e.message);
     }
 }
 
-const addMessage = async function(message, chat_id, owner_id) {
+const addMessage = async function(message, chat_id, owner_id, readUsers) {
     try {
-        const msg = new Message({message, chat_id, owner_id});
+        const msg = new Message({message, chat_id, owner_id, readUsers});
         await msg.save();
-        return await Message.findById(msg._id).populate('owner_id', 'avatar _id login name surname');
+        return await Message.aggregate([
+            {
+                $match: { '_id': mongoose.Types.ObjectId(msg._id)}
+            },
+            { $lookup: {
+                    from: 'users',
+                    as: 'owner',
+                    let: { owner_id: '$owner_id' },
+                    pipeline: [
+                        { $match: {
+                                $expr: { $eq: [ '$_id', '$$owner_id' ] }
+                            }
+                        }, {
+                            $unset: ['tokens', 'password', 'phone', 'birth_year', 'email','__v']
+                        }]
+                }
+            }, {
+                $unwind: '$owner'
+            }
+        ]);
+            // .findById(msg._id).populate('owner_id', 'avatar _id login name surname');
     } catch (e) {
         throw new Error(e);
     }
 }
 
+const updateMessage = async function(chat_id, user_id) {
+    await Message.updateMany({chat_id: chat_id, readUsers: {$all: [mongoose.Types.ObjectId(user_id)]}}, { $pullAll: {readUsers: [user_id] } } )
+}
+
 const createChat = async function(users) {
     try {
-        console.log(users)
+        console.log(users);
         const chat = new Chat(users);
         await chat.save();
     } catch (e) {
@@ -118,5 +163,6 @@ module.exports = {
     getDialogues,
     getMessages,
     addMessage,
+    updateMessage,
     createChat
 }

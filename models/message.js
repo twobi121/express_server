@@ -15,11 +15,18 @@ const messageSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    reciviers_id: [{
+    // reciviers_id: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'User',
+    //     required: true
+    // }],
+    readUsers: [
+    {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        default: [],
         required: true
-    }],
+    } ],
     date: {
         type: Date
     }
