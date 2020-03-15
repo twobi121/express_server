@@ -11,12 +11,12 @@ class ChatController {
         }
     }
 
-    getMessages = async (id, res) => {
+    getMessages = async (id, skipValue) => {
         try {
-            return await chatService.getMessages(id);
+            return await chatService.getMessages(id, skipValue);
             // res.status(200).send(messages);
         } catch (e) {
-            res.status(400).send({error: e.message});
+            // res.status(400).send({error: e.message});
         }
     }
 

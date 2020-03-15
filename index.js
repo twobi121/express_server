@@ -49,12 +49,11 @@ async function start() {
         };
 
         io.on('connection', (socket) => {
-            console.log('connect')
             let _room;
             socket.on('join', async room => {
                 _room = room;
                 socket.join(room);
-                await chatController.updateMessage(room, socket.handshake.query.id)
+                await chatController.updateMessage(room, socket.handshake.query.id);
                 const messages = await chatController.getMessages(room);
                 socket.emit('get-messages', messages);
             });
@@ -71,6 +70,11 @@ async function start() {
             socket.on('read', async (owner_id) => {
                 await chatController.updateMessage(_room, socket.handshake.query.id);
                 io.to(`${owner_id}`).emit("not", {id:_room, event: 'read'});
+            });
+
+            socket.on('get-prev-messages', async (skipValue) => {
+                const messages = await chatController.getMessages(_room, skipValue);
+                socket.emit('get-prev-messages', messages);
             });
         })
     }

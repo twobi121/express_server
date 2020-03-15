@@ -71,9 +71,9 @@ const getDialogues = async function(id) {
                     ]
                 }
             }, {
-                $unwind: '$lastMessage'
+                $unwind: {path: '$lastMessage', "preserveNullAndEmptyArrays": true}
             }, {
-                $unwind: '$lastMessage.owner'
+                $unwind: {path: '$lastMessage.owner', "preserveNullAndEmptyArrays": true}
             },
             {
                 $sort: {'lastMessage.date' : -1}
@@ -84,15 +84,19 @@ const getDialogues = async function(id) {
     }
 }
 
-const getMessages = async function(id) {
+const getMessages = async function(id, skipValue = 0) {
     try {
         let count = await Message.find({chat_id: id}).count();
-        count = count > 5 ? count - 5 : 0;
+        count = count > 10 ? count - skipValue - 10: 0;
+        limit = count > 10 ? 10 : 10 - count;
         return await Message.aggregate([
             {
                 $match: { 'chat_id': mongoose.Types.ObjectId(id)}
             }, {
                 $skip: count
+            },
+            {
+                $limit: limit
             },
             { $lookup: {
                     from: 'users',
@@ -146,7 +150,7 @@ const addMessage = async function(message, chat_id, owner_id, readUsers) {
 }
 
 const updateMessage = async function(chat_id, user_id) {
-    await Message.updateMany({chat_id: chat_id, readUsers: {$all: [mongoose.Types.ObjectId(user_id)]}}, { $pullAll: {readUsers: [user_id] } } )
+    await Message.updateMany({chat_id: chat_id, owner_id: {$ne: user_id}, readUsers: {$all: [mongoose.Types.ObjectId(user_id)]}}, { $pullAll: {readUsers: [user_id] } } )
 }
 
 const createChat = async function(users) {

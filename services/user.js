@@ -37,7 +37,7 @@ const getUsers = async function(body) {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 // const search = async function(body) {
 //     try {
@@ -55,7 +55,7 @@ const addUser = async function(data) {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 const getUserById = async function(id) {
     try {
@@ -63,7 +63,7 @@ const getUserById = async function(id) {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 const getUserByLogin = async function(login) {
     try {
@@ -71,7 +71,7 @@ const getUserByLogin = async function(login) {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 const getIsFriend = async function(login, _id) {
     try {
@@ -158,7 +158,7 @@ const getIsFriend = async function(login, _id) {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 const deleteUserById = async function(id){
     // const userIndex = users.findIndex(item => item.id == id);
@@ -171,7 +171,7 @@ const deleteUserById = async function(id){
         throw new Error(e.message);
     }
 
-}
+};
 
 const updateUserById = async function(id, body){
     try {
@@ -189,7 +189,7 @@ const updateUserById = async function(id, body){
     //     updateJsonFile();
     //     return users[userIndex];
     // } else throw new Error ('no such user');
-}
+};
 
 const getUserPetsById = async function(id) {
     try {
@@ -217,7 +217,7 @@ const getAllUsersWithPets = async function() {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 const getUserPets = async function(id) {
     try {
@@ -236,7 +236,7 @@ const getUserPets = async function(id) {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 const login = async function(login, password){
     try {
@@ -257,7 +257,7 @@ const logout = async function(req) {
     } catch (e) {
         throw new Error(e.message);
     }
-}
+};
 
 const getLogo = async function() {
     try {
