@@ -11,6 +11,19 @@ class ChatController {
         }
     }
 
+    getDialogueId = async (req, res) => {
+        try {
+            const dialogueId = await chatService.getDialogueId(req.user._id, req.params.id);
+            if (dialogueId.length) {
+                res.status(200).send(dialogueId[0]._id);
+            } else res.status(200).send(null);
+
+        } catch (e) {
+            res.status(400).send({error: e.message});
+        }
+    }
+
+
     getMessages = async (id, skipValue) => {
         try {
             return await chatService.getMessages(id, skipValue);
@@ -38,8 +51,8 @@ class ChatController {
 
     createChat = async (req, res) => {
         try {
-            await chatService.createChat(req.body);
-            return res.status(200).send(JSON.stringify('чат успешно удален'));
+            const chatId = await chatService.createChat([req.body.id, req.user._id]);
+            return chatId;
         } catch (e) {
             res.status(400).send({error: e.message});
         }

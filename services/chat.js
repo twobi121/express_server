@@ -84,36 +84,58 @@ const getDialogues = async function(id) {
     }
 }
 
-const getMessages = async function(id, skipValue = 0) {
+const getDialogueId = async function(loggedUser_id, user_id) {
     try {
-        let count = await Message.find({chat_id: id}).count();
-        count = count > 10 ? count - skipValue - 10: 0;
-        limit = count > 10 ? 10 : 10 - count;
-        return await Message.aggregate([
-            {
-                $match: { 'chat_id': mongoose.Types.ObjectId(id)}
+        return await Chat.aggregate([
+            {   $match: {
+                    $and: [
+                        {users: { $all: [mongoose.Types.ObjectId(loggedUser_id), mongoose.Types.ObjectId(user_id)]}},
+                        {users: { $size: 2} }
+                    ]}
             }, {
-                $skip: count
-            },
-            {
-                $limit: limit
-            },
-            { $lookup: {
-                    from: 'users',
-                    as: 'owner',
-                    let: { owner_id: '$owner_id' },
-                    pipeline: [
-                        { $match: {
-                                $expr: { $eq: [ '$_id', '$$owner_id' ] }
-                            }
-                        }, {
-                            $unset: ['tokens', 'password', 'phone', 'birth_year', 'email','__v']
-                        }]
+                $addFields: {
+                    _id: '$_id'
                 }
-            }, {
-                $unwind: '$owner'
             }
         ]);
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const getMessages = async function(id, skipValue = 0) {
+    try {
+        const count = await Message.find({chat_id: id}).count();
+        const limit = count - skipValue > 10 ? 10 : count - skipValue;
+        const skip = count - skipValue > 10 ? count - skipValue - 10: 0;
+
+        if(count) {
+            return await Message.aggregate([
+                {
+                    $match: { 'chat_id': mongoose.Types.ObjectId(id)}
+                }, {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                },
+                { $lookup: {
+                        from: 'users',
+                        as: 'owner',
+                        let: { owner_id: '$owner_id' },
+                        pipeline: [
+                            { $match: {
+                                    $expr: { $eq: [ '$_id', '$$owner_id' ] }
+                                }
+                            }, {
+                                $unset: ['tokens', 'password', 'phone', 'birth_year', 'email','__v']
+                            }]
+                    }
+                }, {
+                    $unwind: '$owner'
+                }
+            ]);
+        } else return [];
     } catch (e) {
         throw new Error(e.message);
     }
@@ -155,9 +177,9 @@ const updateMessage = async function(chat_id, user_id) {
 
 const createChat = async function(users) {
     try {
-        console.log(users);
         const chat = new Chat(users);
         await chat.save();
+        return chat._id;
     } catch (e) {
         throw new Error(e.message);
     }
@@ -165,6 +187,7 @@ const createChat = async function(users) {
 
 module.exports = {
     getDialogues,
+    getDialogueId,
     getMessages,
     addMessage,
     updateMessage,

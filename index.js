@@ -49,6 +49,7 @@ async function start() {
         };
 
         io.on('connection', (socket) => {
+            socket.emit('connected');
             let _room;
             socket.on('join', async room => {
                 _room = room;
@@ -63,9 +64,9 @@ async function start() {
             socket.on('message', async message => {
                 const newMessage = await chatController.addMessage(message);
                 io.to(_room).emit("new-message", newMessage);
-                // message.receivers_id.forEach(id => {
-                //     io.to(`${id}`).emit("not", message.message)
-                // });
+                message.receivers_id.forEach(id => {
+                    io.to(`${id}`).emit("not", message.message)
+                });
             });
             socket.on('read', async (owner_id) => {
                 await chatController.updateMessage(_room, socket.handshake.query.id);
