@@ -4,6 +4,7 @@ const User = require('../models/user');
 const Pets = require('../models/pets');
 const Request = require('../models/requests');
 const Friend = require('../models/friend');
+const Chat = require('../models/chat');
 const mongoose = require('mongoose');
 
 const getUsers = async function(body) {
@@ -380,6 +381,148 @@ const unfriend = async function(id) {
     }
 }
 
+const getFriendsWithoutDialogue = async function(id, skipValue) {
+    try {
+        // const chats = await Chat.aggregate([
+        //     {   $match: {
+        //             $and: [
+        //                 {users: mongoose.Types.ObjectId(id)},
+        //                 {users: { $size: 2} }
+        //             ]}
+        //         }, {
+        //             $unset: ['_id', '__v']
+        //         }, {
+        //         $project: {
+        //             _id: '$_id',
+        //             users: {
+        //                 $filter: {
+        //                     input: "$users",
+        //                     "as": "user",
+        //                     cond: {
+        //                         $ne: [ "$$user", id ]
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }, {
+        //         $unwind: '$users'
+        //     }
+        //     ]);
+        //
+        // const ids = chats.map(item => item.users);
+        //
+        // const count = await Friend.find({$or: [{ friend1_id: mongoose.Types.ObjectId(id) }, { friend2_id: mongoose.Types.ObjectId(id) }]}).count() - ids.length;
+        // const limit = count - skipValue > 10 ? 10 : count - skipValue;
+        // const skip = count - skipValue > 10 ? count - skipValue - 10: 0;
+        //
+        // const friends = await Friend.aggregate([
+        //     {
+        //         $match: {                     $or: [{ friend1_id: mongoose.Types.ObjectId(id) }, { friend2_id: mongoose.Types.ObjectId(id) }]
+        //     }}, {
+        //         $project: {
+        //             friend_id: {
+        //             $cond: {
+        //                 if: { $eq: [ id, "$friend1_id" ] },
+        //                 then: "$friend2_id",
+        //                 else: "$friend1_id",
+        //             }
+        //         }
+        //     }},  { $unwind : "$friend_id" },
+        //     { $group : {
+        //             _id : "$_id",
+        //             friendsId : { $push : "$friend_id" },
+        //         }},
+        //     { $project : { _id : false,
+        //             friends: {
+        //                     "$filter": {
+        //                     "input": "$friendsId",
+        //                     "as": "item",
+        //                     "cond": {
+        //                         "$ne": [
+        //                             { $setDifference: ["$friendsId", ids] },
+        //                             []
+        //                         ]
+        //                     }
+        //                 }
+        //             }
+        //     }}, {
+        //     $unwind: '$friends'
+        //     }, {
+        //         $lookup: {
+        //             from: 'users',
+        //             localField: 'friends',
+        //             foreignField: '_id',
+        //             as: 'user'
+        //         }
+        //     }, {
+        //         $unwind: '$user'
+        //     }, {
+        //         $replaceRoot: { newRoot: '$user' }
+        //     }, {
+        //         $unset: [ "password", "tokens", "__v" ]
+        //     }, {
+        //         $sort: {'name': 1}
+        //     }
+        //
+        // ]);
+
+        const count = await Friend.find({$or: [{ friend1_id: mongoose.Types.ObjectId(id) }, { friend2_id: mongoose.Types.ObjectId(id) }]}).count();
+        const limit = count - skipValue > 5 ? 5 : count - skipValue;
+        const skip = +skipValue;
+        if (skip === count ) {
+            return [];
+        }
+        const friends = await Friend.aggregate([
+            {
+                $match: { $or: [{ friend1_id: mongoose.Types.ObjectId(id) }, { friend2_id: mongoose.Types.ObjectId(id) }]
+            }}, {
+                $project: {
+                    friend_id: {
+                    $cond: {
+                        if: { $eq: [ id, "$friend1_id" ] },
+                        then: "$friend2_id",
+                        else: "$friend1_id",
+                    }
+                }
+            }},  { $unwind : "$friend_id" },
+            {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'friend_id',
+                            foreignField: '_id',
+                            as: 'user'
+                        }
+                    },
+            {
+                $project:  {
+                    "_id": 1,
+                    "user._id": 1,
+                    "user.avatar": 1,
+                    "user.name": 1,
+                    "user.surname": 1,
+                    "user.login": 1,
+                }
+            },{
+                $unset: ['friend_id']
+            }, {
+                $unwind: '$user'
+            }, {
+                $replaceRoot: { newRoot: '$user' }
+            }, {
+                $sort: {'name': 1}
+            }, {
+                $skip: skip
+            }, {
+                $limit: limit
+            }
+        ]);
+
+        return friends
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
 
 module.exports = {
     getUsers,
@@ -400,5 +543,6 @@ module.exports = {
     acceptRequest,
     declineRequest,
     getFriends,
-    unfriend
+    unfriend,
+    getFriendsWithoutDialogue
 }

@@ -9,6 +9,7 @@ const user_controller = new UserController();
 
 const router = new express.Router();
 router.get('/requests', auth, user_controller.getRequests);
+router.get('/friendsWithoutDialogues/:skipValue', auth, user_controller.getFriendsWithoutDialogue);
 router.get('/pets', user_controller.getAllUsersWithPets);
 router.get('/:login/friends', user_controller.getFriends);
 router.get('/:id/pets', user_controller.getUserPets);//возвращает овнера с петами внутри

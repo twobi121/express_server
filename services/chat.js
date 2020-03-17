@@ -175,9 +175,13 @@ const updateMessage = async function(chat_id, user_id) {
     await Message.updateMany({chat_id: chat_id, owner_id: {$ne: user_id}, readUsers: {$all: [mongoose.Types.ObjectId(user_id)]}}, { $pullAll: {readUsers: [user_id] } } )
 }
 
-const createChat = async function(users) {
+const createChat = async function(ids) {
     try {
-        const chat = new Chat(users);
+        const checkChat = await Chat.find({users: ids})
+        if (checkChat.length) {
+            return checkChat[0]._id
+        }
+        const chat = new Chat({users: ids});
         await chat.save();
         return chat._id;
     } catch (e) {

@@ -51,8 +51,11 @@ class ChatController {
 
     createChat = async (req, res) => {
         try {
-            const chatId = await chatService.createChat([req.body.id, req.user._id]);
-            return chatId;
+            let ids = [];
+            ids = ids.concat(req.body.id, req.user._id.toString());
+            ids.sort((a, b) => a - b);
+            const chatId = await chatService.createChat(ids);
+            res.status(200).send(chatId);
         } catch (e) {
             res.status(400).send({error: e.message});
         }

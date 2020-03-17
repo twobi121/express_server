@@ -206,6 +206,15 @@ class UserController {
         }
     }
 
+    getFriendsWithoutDialogue = async (req, res) => {
+        try {
+            const users = await service.getFriendsWithoutDialogue(req.user._id, req.params.skipValue);
+            res.send(users);
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
 
 
 }
