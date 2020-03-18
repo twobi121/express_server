@@ -175,15 +175,57 @@ const updateMessage = async function(chat_id, user_id) {
     await Message.updateMany({chat_id: chat_id, owner_id: {$ne: user_id}, readUsers: {$all: [mongoose.Types.ObjectId(user_id)]}}, { $pullAll: {readUsers: [user_id] } } )
 }
 
-const createChat = async function(ids) {
+const createChat = async function(loggedUserId, usersIds) {
     try {
+        let ids = [];
+        ids = ids.concat(usersIds, loggedUserId.toString());
+        ids.sort((a, b) => a - b);
+
         const checkChat = await Chat.find({users: ids})
         if (checkChat.length) {
-            return checkChat[0]._id
+            return checkChat[0]
         }
-        const chat = new Chat({users: ids});
-        await chat.save();
-        return chat._id;
+        const newChat = new Chat({users: ids});
+        await newChat.save();
+        // return await Chat.findById(chat._id).populate('users', {password: 0, tokens: 0, __v: 0})
+        const chat = await Chat.aggregate([{
+            $match: {
+                _id: mongoose.Types.ObjectId(newChat._id)
+                }
+            }, {
+                $unwind:  '$users',
+            }, {
+                $lookup: {
+                    from: 'users',
+                    localField: 'users',
+                    foreignField: '_id',
+                    as: 'users',
+                }
+            }, {
+                $unwind:  '$users',
+            }, {
+                $unset: ['users.tokens', 'users.password', 'users.__v']
+            }, {
+                $group: {
+                    _id: '$_id',
+                    users: { $push: '$users' }
+                }
+            }, {
+            $project: {
+                _id: '$_id',
+                users: {
+                    $filter: {
+                        input: "$users",
+                        "as": "user",
+                        cond: {
+                            $ne: ["$$user._id", loggedUserId]
+                        }
+                    }
+                    }
+            }
+            }
+        ]);
+        return chat[0];
     } catch (e) {
         throw new Error(e.message);
     }

@@ -15,7 +15,7 @@ class ChatController {
         try {
             const dialogueId = await chatService.getDialogueId(req.user._id, req.params.id);
             if (dialogueId.length) {
-                res.status(200).send(dialogueId[0]._id);
+                res.status(200).send(dialogueId[0]);
             } else res.status(200).send(null);
 
         } catch (e) {
@@ -51,11 +51,9 @@ class ChatController {
 
     createChat = async (req, res) => {
         try {
-            let ids = [];
-            ids = ids.concat(req.body.id, req.user._id.toString());
-            ids.sort((a, b) => a - b);
-            const chatId = await chatService.createChat(ids);
-            res.status(200).send(chatId);
+
+            const chat = await chatService.createChat(req.user._id, req.body.id);
+            res.status(200).send(chat);
         } catch (e) {
             res.status(400).send({error: e.message});
         }

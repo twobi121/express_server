@@ -65,7 +65,7 @@ async function start() {
                 const newMessage = await chatController.addMessage(message);
                 io.to(_room).emit("new-message", newMessage);
                 message.receivers_id.forEach(id => {
-                    io.to(`${id}`).emit("not", message.message)
+                    io.to(`${id}`).emit("not", {message: newMessage[0], event: 'new-message'})
                 });
             });
             socket.on('read', async (owner_id) => {
