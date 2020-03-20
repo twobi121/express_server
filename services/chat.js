@@ -2,8 +2,14 @@ const mongoose = require('mongoose');
 const Chat = require('../models/chat');
 const Message = require('../models/message');
 
-const getDialogues = async function(id) {
+const getDialogues = async function(id, skipValue) {
     try {
+        const count = await Chat.find({users: id}).count();
+        if (count === skipValue) {
+            return [];
+        }
+        const limit = count - skipValue >= 10 ? 10 : count - skipValue;
+
         return await Chat.aggregate([
             {
                 $match: {
@@ -77,6 +83,43 @@ const getDialogues = async function(id) {
             },
             {
                 $sort: {'lastMessage.date' : -1}
+            }, {
+                $lookup: {
+                    from: 'messages',
+                    as: 'messages',
+                    let: { ch_id: '$_id' },
+                    pipeline: [
+                        { $match: {
+                                $expr: { $eq: [ '$chat_id', '$$ch_id' ] }
+                            } },
+                        { $sort: {date: -1}}]
+                }}, {
+                $project: {
+                    _id: '$_id',
+                    users: '$users',
+                    lastMessage: '$lastMessage',
+                    unreadMsgNumber: {
+                        $filter: {
+                            input: "$messages",
+                            "as": "message",
+                            cond: { $and: [
+                                    {$ne: ["$$message.owner_id", id]},
+                                    {$ne: ['$$message.readUsers', []]},
+                                    {$in: [id, '$$message.readUsers']}
+                                ]
+                            }
+                        }
+                    }
+                }}, {
+                $addFields: {
+                    unreadMsgNumber: {
+                        $size: '$unreadMsgNumber'
+                    }
+                }
+            }, {
+                $skip: skipValue
+            }, {
+                $limit: limit
             }
         ]);
     } catch (e) {
@@ -86,7 +129,7 @@ const getDialogues = async function(id) {
 
 const getDialogueId = async function(loggedUser_id, user_id) {
     try {
-        return await Chat.aggregate([
+        const chat = await Chat.aggregate([
             {   $match: {
                     $and: [
                         {users: { $all: [mongoose.Types.ObjectId(loggedUser_id), mongoose.Types.ObjectId(user_id)]}},
@@ -96,8 +139,18 @@ const getDialogueId = async function(loggedUser_id, user_id) {
                 $addFields: {
                     _id: '$_id'
                 }
-            }
+            }, {
+                $lookup: {
+                    from: 'users',
+                    localField: 'users',
+                    foreignField: '_id',
+                    as: 'users',
+                }
+            },
         ]);
+        if (chat.length) {
+            return chat[0];
+        } else return await this.createChat(loggedUser_id, user_id);
     } catch (e) {
         throw new Error(e.message);
     }
@@ -165,7 +218,6 @@ const addMessage = async function(message, chat_id, owner_id, readUsers) {
                 $unwind: '$owner'
             }
         ]);
-            // .findById(msg._id).populate('owner_id', 'avatar _id login name surname');
     } catch (e) {
         throw new Error(e);
     }
@@ -231,11 +283,67 @@ const createChat = async function(loggedUserId, usersIds) {
     }
 }
 
+const getUnreadMessagesNumber = async function(id) {
+    try {
+        const number = await Chat.aggregate([
+            {
+                $match: {
+                    users: {$all: [mongoose.Types.ObjectId(id)]}
+                }
+            }, {
+                $lookup: {
+                    from: 'messages',
+                    as: 'messages',
+                    let: { ch_id: '$_id' },
+                    pipeline: [
+                        { $match: {
+                                $expr: { $eq: [ '$chat_id', '$$ch_id' ] }
+                            }
+                        }]
+                }}, {
+                $project: {
+                    _id: '$_id',
+                    unreadMsgNumber: {
+                        $filter: {
+                            input: "$messages",
+                            "as": "message",
+                            cond: { $and: [
+                                    {$ne: ["$$message.owner_id", id]},
+                                    {$ne: ['$$message.readUsers', []]},
+                                    {$in: [id, '$$message.readUsers']}
+                                ]
+                            }
+                        }
+                    }
+                }}, {
+                $addFields: {
+                    unreadMsgNumber: {
+                        $size: '$unreadMsgNumber'
+                    }
+                }}, {
+                $group: {
+                    _id : null,
+                    number: {$sum: '$unreadMsgNumber'}
+                }}, {
+                $project: {
+                    _id: 0,
+                    number: 1
+                }}
+        ]);
+        return number;
+    } catch(e) {
+        throw new Error(e.message);
+    }
+}
+
+
+
 module.exports = {
     getDialogues,
     getDialogueId,
     getMessages,
     addMessage,
     updateMessage,
-    createChat
+    createChat,
+    getUnreadMessagesNumber
 }

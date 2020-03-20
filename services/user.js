@@ -150,12 +150,6 @@ const getIsFriend = async function(login, _id) {
                 $unset: [ "_id" ]
             }]
         )
-
-
-
-
-
-        // find({login: login}).select('-tokens -password -__v');
     } catch (e) {
         throw new Error(e.message);
     }
@@ -302,6 +296,14 @@ const getRequests = async function(id) {
             }
         ]);
         return requests;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+const getRequestsNumber = async function(id) {
+    try {
+        return await Request.find({'owner_id': id}).count();
     } catch (e) {
         throw new Error(e.message);
     }
@@ -467,9 +469,8 @@ const getFriendsWithoutDialogue = async function(id, skipValue) {
         // ]);
 
         const count = await Friend.find({$or: [{ friend1_id: mongoose.Types.ObjectId(id) }, { friend2_id: mongoose.Types.ObjectId(id) }]}).count();
-        const limit = count - skipValue > 5 ? 5 : count - skipValue;
-        const skip = +skipValue;
-        if (skip === count ) {
+        const limit = count - skipValue >= 5 ? 5 : count - skipValue;
+        if (skipValue === count ) {
             return [];
         }
         const friends = await Friend.aggregate([
@@ -511,7 +512,7 @@ const getFriendsWithoutDialogue = async function(id, skipValue) {
             }, {
                 $sort: {'name': 1}
             }, {
-                $skip: skip
+                $skip: skipValue
             }, {
                 $limit: limit
             }
@@ -544,5 +545,6 @@ module.exports = {
     declineRequest,
     getFriends,
     unfriend,
-    getFriendsWithoutDialogue
+    getFriendsWithoutDialogue,
+    getRequestsNumber
 }

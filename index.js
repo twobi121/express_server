@@ -3,6 +3,7 @@ const express = require('express');
 const router = require('./routers/export_routers');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const emitter = require('./emitter');
 
 
 
@@ -48,6 +49,10 @@ async function start() {
             return socket._query.id
         };
 
+        emitter.on('friend', (friend) => {
+            io.to(`${friend.id}`).emit("not", {friend: friend.user, event: 'friendship'});
+        });
+
         io.on('connection', (socket) => {
             socket.emit('connected');
             let _room;
@@ -72,7 +77,6 @@ async function start() {
                 await chatController.updateMessage(_room, socket.handshake.query.id);
                 io.to(`${owner_id}`).emit("not", {id:_room, event: 'read'});
             });
-
             socket.on('get-prev-messages', async (skipValue) => {
                 const messages = await chatController.getMessages(_room, skipValue);
                 socket.emit('get-prev-messages', messages);

@@ -6,9 +6,10 @@ const chat_controller = new ChatController();
 
 const router = new express.Router();
 
-router.get('/:id', auth, chat_controller.getMessages);
 router.get('/getDialogueId/:id', auth, chat_controller.getDialogueId);
-router.get('/', auth, chat_controller.getDialogues);
+router.get('/getUnreadMessagesNumber', auth, chat_controller.getUnreadMessagesNumber);
+router.get('/:skipValue', auth, chat_controller.getDialogues);
+router.get('/:id', auth, chat_controller.getMessages);
 router.post('/create', auth, chat_controller.createChat);
 router.post('/addMessage', auth, chat_controller.addMessage);
 

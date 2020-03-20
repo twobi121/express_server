@@ -1,9 +1,10 @@
 const service = require('../services/user');
+const emitter = require('../emitter');
 
 class UserController {
 
-    constructor() {
-    }
+    constructor() {}
+
 
     getUsers = async (req, res) => {
         try {
@@ -146,7 +147,9 @@ class UserController {
         try {
             const data = {owner_id: req.body.id, sender_id: req.user._id};
             await service.createRequest(data);
-            res.send({responce: "successfully send"});
+            const user = await service.getUserById(req.user._id);
+            emitter.emit("friend", {id: req.body.id, user});
+            res.send({response: "successfully send"});
         } catch (e) {
             res.status(400).send({error: e.message})
         }
@@ -156,6 +159,15 @@ class UserController {
         try {
             const requests = await service.getRequests(req.user._id);
             res.send(requests);
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    getRequestsNumber = async (req, res) => {
+        try {
+            const requestsNumber = await service.getRequestsNumber(req.user._id);
+            res.send(`${requestsNumber}`);
         } catch (e) {
             res.status(400).send({error: e.message})
         }
@@ -208,7 +220,7 @@ class UserController {
 
     getFriendsWithoutDialogue = async (req, res) => {
         try {
-            const users = await service.getFriendsWithoutDialogue(req.user._id, req.params.skipValue);
+            const users = await service.getFriendsWithoutDialogue(req.user._id, +req.params.skipValue);
             res.send(users);
         } catch (e) {
             res.status(400).send({error: e.message})
@@ -218,5 +230,6 @@ class UserController {
 
 
 }
+
 
 module.exports = UserController;

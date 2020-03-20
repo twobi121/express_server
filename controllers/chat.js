@@ -4,7 +4,7 @@ class ChatController {
 
     getDialogues = async (req, res) => {
         try {
-            const dialogues = await chatService.getDialogues(req.user._id);
+            const dialogues = await chatService.getDialogues(req.user._id, +req.params.skipValue);
             res.status(200).send(dialogues);
         } catch (e) {
             res.status(400).send({error: e.message});
@@ -13,11 +13,11 @@ class ChatController {
 
     getDialogueId = async (req, res) => {
         try {
+            if (req.user._id === req.params.id) {
+                return null;
+            }
             const dialogueId = await chatService.getDialogueId(req.user._id, req.params.id);
-            if (dialogueId.length) {
-                res.status(200).send(dialogueId[0]);
-            } else res.status(200).send(null);
-
+            res.status(200).send(dialogueId);
         } catch (e) {
             res.status(400).send({error: e.message});
         }
@@ -54,6 +54,15 @@ class ChatController {
 
             const chat = await chatService.createChat(req.user._id, req.body.id);
             res.status(200).send(chat);
+        } catch (e) {
+            res.status(400).send({error: e.message});
+        }
+    }
+
+    getUnreadMessagesNumber  = async (req, res) => {
+        try {
+            const number = await chatService.getUnreadMessagesNumber(req.user._id);
+            res.status(200).send(number[0]);
         } catch (e) {
             res.status(400).send({error: e.message});
         }

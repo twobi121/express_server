@@ -8,6 +8,7 @@ const UserController = require('../controllers/user');
 const user_controller = new UserController();
 
 const router = new express.Router();
+router.get('/requestNumber', auth, user_controller.getRequestsNumber);
 router.get('/requests', auth, user_controller.getRequests);
 router.get('/friendsWithoutDialogues/:skipValue', auth, user_controller.getFriendsWithoutDialogue);
 router.get('/pets', user_controller.getAllUsersWithPets);
