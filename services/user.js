@@ -14,7 +14,25 @@ const getUsers = async function(body) {
         if (!body.value) {
             match = {};
         } else if (body.value) {
-            match = {$or: [{'name': new RegExp('^' + body.value, 'i')}, {'surname': new RegExp('^' + body.value, 'i')}]}
+            const value = body.value.split(' ');
+            if (value.length === 1) {
+                match = {$or: [{'name': new RegExp('^' + body.value, 'i')}, {'surname': new RegExp('^' + body.value, 'i')}]}
+            } else match = {
+                            $and: [
+                                {
+                                    $or: [
+                                        {'name': new RegExp('^' + value[0], 'i')},
+                                        {'name': new RegExp('^' + value[1], 'i')},
+                                    ]
+                                },
+                                {
+                                    $or: [
+                                        {'surname': new RegExp('^' + value[0], 'i')},
+                                        {'surname': new RegExp('^' + value[1], 'i')}
+                                    ]
+                                },
+                            ]
+            };
         }
         return await User.aggregate([
             { $match: match},
@@ -39,14 +57,6 @@ const getUsers = async function(body) {
         throw new Error(e.message);
     }
 };
-
-// const search = async function(body) {
-//     try {
-//
-//     } catch (e) {
-//         throw new Error(e.message);
-//     }
-// }
 
 const addUser = async function(data) {
     try {
