@@ -1,8 +1,10 @@
 const multer  = require("multer");
+const emitter = require('../emitter');
 const mongoose = require('mongoose');
 const Albums = require('../models/albums');
 const Photos = require('../models/photos');
-
+const Likes = require('../models/likes');
+const User = require('../models/user');
 const createAlbum = async function(data) {
     try {
         const album = new Albums({...data});
@@ -80,17 +82,17 @@ const getAlbums = async function(id) {
     }
 }
 
-const getAlbumsWithPhotos = async function(id) {
+const getAlbumsWithPhotos = async function(owner_id, loggedUserId) {
     try {
         const albums = await Albums.aggregate([
             {
-                $match: {'owner_id' : mongoose.Types.ObjectId(id)}
+                $match: {'owner_id' : mongoose.Types.ObjectId(owner_id)}
             }
         ]);
 
         const sortedPhotos = await Photos.aggregate([
             {
-                $match: {'owner_id' : mongoose.Types.ObjectId(id)}
+                $match: {'owner_id' : mongoose.Types.ObjectId(owner_id)}
             },
             { $lookup:
             {
@@ -101,11 +103,40 @@ const getAlbumsWithPhotos = async function(id) {
             }},
             {$unwind: '$album'},
             {$sort: {date: -1}},
+            {$lookup: {
+                from: 'likes',
+                localField: '_id',
+                foreignField: 'post_id',
+                as: 'likes'
+            }},
+            {$project: {
+                _id: 1,
+                album: 1,
+                date: 1,
+                filename: 1,
+                album_id: 1,
+                owner_id: 1,
+                    likes: 1,
+                isLiked: {
+                    $filter: {
+                        input: "$likes",
+                        as: "like",
+                        cond: { $eq: [ loggedUserId, '$$like.owner_id' ]  }
+                    }
+                }
+            }},
+            {$addFields: {
+                    isLiked: {
+                        $cond: [ {$ne:['$isLiked',[]]},true, false ]
+                    },
+                    likes: {$size: '$likes'}
+                }},
             {$group: {
                     _id: {$year: "$date"},
                     photos: { $push: "$$ROOT"}
                 }},
             {$sort: {_id: -1}},
+
 
         ]);
 
@@ -115,22 +146,50 @@ const getAlbumsWithPhotos = async function(id) {
     }
 }
 
-const getAlbum = async function(id) {
+const getAlbum = async function(id, loggedUserId) {
     try {
         const album = await Albums.aggregate([
             {
                 $match: { "_id": mongoose.Types.ObjectId(id)}
-            },
-                    {
-                        $lookup:
-                            {
-                                from: 'photos',
+            }, {
+                $lookup: {
+                    from: 'photos',
+                    as: 'photos',
+                    let: { alb_id: '$_id' },
+                    pipeline: [
+                        { $match: {
+                                $expr: { $eq: [ '$album_id', '$$alb_id' ] }
+                            },
+                        }, {$lookup: {
+                                from: 'likes',
                                 localField: '_id',
-                                foreignField: 'album_id',
-                                as: 'photos'
-                            }
-                    }
-                ])
+                                foreignField: 'post_id',
+                                as: 'likes'
+                            }},
+                        {$project: {
+                                _id: 1,
+                                album: 1,
+                                date: 1,
+                                filename: 1,
+                                album_id: 1,
+                                owner_id: 1,
+                                likes: 1,
+                                isLiked: {
+                                    $filter: {
+                                        input: "$likes",
+                                        as: "like",
+                                        cond: { $eq: [ loggedUserId, '$$like.owner_id' ]  }
+                                    }
+                                }
+                            }},
+                        {$addFields: {
+                                isLiked: {
+                                    $cond: [ {$ne:['$isLiked',[]]},true, false ]
+                                },
+                                likes: {$size: '$likes'}
+                            }},]
+                }}
+                ]);
         return album[0];
     } catch (e) {
         throw new Error(e.message);
@@ -153,6 +212,26 @@ const updateAlbum = async function(body) {
     }
 }
 
+const setLike = async function(owner_id, post_id) {
+    try {
+        const like = await Likes.find({post_id, owner_id});
+        if (!like.length) {
+            const newLike = new Likes({post_id, owner_id});
+            await newLike.save();
+            const photo = await Photos.find({_id: post_id});
+            const sender = await User.find({_id: owner_id}).select('-password -tokens -__v');
+            if (sender[0]._id.toString() !== photo[0].owner_id.toString()) {
+                emitter.emit('like', {photo: photo[0], sender: sender[0]});
+            }
+            return true;
+        } else {
+            await Likes.deleteOne({_id: like[0]._id});
+            return false;
+        }
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
 
 
 module.exports = {
@@ -165,7 +244,8 @@ module.exports = {
     getAlbumsWithPhotos,
     getAlbum,
     updateAlbumPreview,
-    updateAlbum
+    updateAlbum,
+    setLike
 }
 
 

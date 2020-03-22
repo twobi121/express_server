@@ -336,7 +336,22 @@ const getUnreadMessagesNumber = async function(id) {
     }
 }
 
-
+const getDialoguesUsers = async function(id) {
+    return Chat.aggregate([
+        {
+        $match: {
+            users: {$all: [mongoose.Types.ObjectId(id)]}
+        }
+        }, {
+        $unwind: '$users'
+        },{
+        $group: {
+            _id: null,
+            users: {$addToSet: "$users"}
+        }
+        }
+        ]);
+}
 
 module.exports = {
     getDialogues,
@@ -345,5 +360,6 @@ module.exports = {
     addMessage,
     updateMessage,
     createChat,
-    getUnreadMessagesNumber
+    getUnreadMessagesNumber,
+    getDialoguesUsers
 }

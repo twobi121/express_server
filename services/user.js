@@ -248,7 +248,7 @@ const logout = async function(req) {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token !== req.token
         });
-        await User.findByIdAndUpdate(req.user._id, {tokens: req.user.tokens});
+        await User.findByIdAndUpdate(req.user._id, {tokens: req.user.tokens, online: false});
     } catch (e) {
         throw new Error(e.message);
     }
@@ -361,6 +361,7 @@ const getFriends = async function(login) {
                     "user.name": 1,
                     "user.surname": 1,
                     "user.login": 1,
+                    "user.online": 1
                 }
             },{
                 $unset: ['friend_id']

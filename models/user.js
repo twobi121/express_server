@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
         type: Object,
         default: {filename: 'avatar-default.png'}
     },
+    online: {
+        type: Boolean,
+        default: false
+    },
     tokens: [{
         token: {
             type: String,

@@ -78,7 +78,7 @@ class MediaController {
 
     getAlbumsWithPhotos = async (req, res) => {
         try {
-            const albums = await mediaService.getAlbumsWithPhotos(req.params.id);
+            const albums = await mediaService.getAlbumsWithPhotos(req.params.id, req.user._id);
             res.status(200).send(albums);
         } catch (e) {
             res.status(400).send({error: e.message})
@@ -87,7 +87,7 @@ class MediaController {
 
     getAlbum = async (req, res) => {
         try {
-            const album = await mediaService.getAlbum(req.params.id);
+            const album = await mediaService.getAlbum(req.params.id, req.user._id);
             res.status(200).send(album);
         } catch (e) {
             res.status(400).send({error: e.message})
@@ -116,6 +116,15 @@ class MediaController {
         try {
             await mediaService.updateAlbum(req.body);
             res.status(200).send(JSON.stringify("Альбом обновлен"));
+        } catch (e) {
+            res.status(400).send({error: e.message})
+        }
+    }
+
+    setLike = async (req, res) => {
+        try {
+            const liked = await mediaService.setLike(req.user._id, req.body.id);
+            res.status(200).send(liked);
         } catch (e) {
             res.status(400).send({error: e.message})
         }

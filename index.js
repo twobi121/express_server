@@ -30,6 +30,9 @@ app.use('/dialogues', router.chatRouter);
 
 const ChatController = require('./controllers/chat');
 const chatController = new ChatController();
+const userService = require('./services/user');
+const chatService = require('./services/chat');
+
 
 async function start() {
     try {
@@ -53,8 +56,15 @@ async function start() {
             io.to(`${friend.id}`).emit("not", {friend: friend.user, event: 'friendship'});
         });
 
-        io.on('connection', (socket) => {
+        emitter.on('like', (data) => {
+            io.to(`${data.photo.owner_id}`).emit("not", {...data, event: 'like'});
+        });
+
+        io.on('connection', async (socket) => {
             socket.emit('connected');
+            await userService.updateUserById(socket.id, {online: true});
+            const usersInChats = await chatService.getDialoguesUsers(socket.id);
+            usersInChats[0].users.forEach(id => io.to(`${id}`).emit("not", {id: socket.id, event: 'online'}));
             let _room;
             socket.on('join', async room => {
                 _room = room;
@@ -81,7 +91,14 @@ async function start() {
                 const messages = await chatController.getMessages(_room, skipValue);
                 socket.emit('get-prev-messages', messages);
             });
+
+            socket.on('disconnect', async() => {
+                await userService.updateUserById(socket.id, {online: false});
+                const usersInChats = await chatService.getDialoguesUsers(socket.id);
+                usersInChats[0].users.forEach(id => io.to(`${id}`).emit("not", {id: socket.id, event: 'offline'}));
+            });
         })
+
     }
     catch (e) {
         console.log(e);
